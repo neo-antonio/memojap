@@ -1,3 +1,8 @@
+// Duolingo-style answer sounds (Web Audio, no files). Called from fb(); toggle: S.sfx in Profile.
+const SFX=(()=>{let c=null;const ac=()=>{try{if(!c){const A=window.AudioContext||window.webkitAudioContext;if(!A)return null;c=new A()}if(c.state==='suspended')c.resume();return c}catch(e){return null}};
+const note=(c,f,t,d,ty,v,lp)=>{const o=c.createOscillator(),o2=c.createOscillator(),g=c.createGain(),g2=c.createGain(),F=c.createBiquadFilter();o.type=ty;o2.type='sine';o.frequency.value=f;o2.frequency.value=f*2;F.type='lowpass';F.frequency.value=lp;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+d);g2.gain.value=.25;o.connect(g);o2.connect(g2);g2.connect(g);g.connect(F);F.connect(c.destination);o.start(t);o2.start(t);o.stop(t+d+.05);o2.stop(t+d+.05)};
+return{ok(){const x=ac();if(!x)return;const t=x.currentTime+.01;note(x,784,t,.28,'triangle',.22,6e3);note(x,1046.5,t+.09,.3,'triangle',.22,6e3);note(x,1318.5,t+.18,.55,'triangle',.24,7e3)},
+bad(){const x=ac();if(!x)return;const t=x.currentTime+.01;note(x,277,t,.22,'square',.12,900);note(x,208,t+.16,.42,'square',.12,800)}}})();
 const ic=n=>`<img class=ic src="${EMO[n]}" alt="">`;
 const vt=f=>document.startViewTransition&&!matchMedia('(prefers-reduced-motion:reduce)').matches?document.startViewTransition(f):f();
 const $=s=>document.querySelector(s),M=$('#main');
@@ -7,7 +12,7 @@ const K=H.map(c=>String.fromCharCode(c.charCodeAt(0)+96));
 const CUR=[['日本','にほん','Japan','日 reads に here'],['学生','がくせい','student',''],['先生','せんせい','teacher',''],['大人','おとな','adult','Irregular: 大 → おと'],['今日','きょう','today','Special reading, not いま+ひ'],['日曜日','にちようび','Sunday','日 → にち'],['火曜日','かようび','Tuesday',''],['水曜日','すいようび','Wednesday',''],['山','やま','mountain',''],['川','かわ','river',''],['水','みず','water',''],['木','き','tree',''],['人','ひと','person','In 日本人 it reads じん'],['日本人','にほんじん','Japanese person','人 → じん'],['口','くち','mouth',''],['目','め','eye',''],['本','ほん','book',''],['月','つき','moon','']].map(a=>({w:a[0],r:a[1],m:a[2],n:a[3]}));
 const KM=Object.fromEntries(KJ.map(k=>[k[0],k]));const fixW=x=>{const K=c=>/[\u4e00-\u9fff]/.test(c);if(!K(x.w)&&[...x.r].some(K))[x.w,x.r]=[x.r,x.w];if(x.r.length>2&&x.r.endsWith('する')&&!x.w.endsWith('する')){x.r=x.r.slice(0,-2);x.n=x.n||'する-verb noun'}return x};
 const SEED=WORDS.map(a=>fixW({w:a[0],r:a[1],m:a[2],n:''}));
-let S={xp:0,streak:0,last:'',day:'',today:0,goal:20,lv:'N5',cards:{},custom:[],ck:[],ckm:0,words:[...CUR],tts:true,filter:'all',theme:'auto',hist:{},newMax:10,revMax:100,nn:0,nd:''},T='cards',A='h',KD=null,RV=0,flip=0,Q=[],AS=null,KL='N5',RT=0,SX=0,PV=0,fresh=0,FI=null,PT=0,AN=null,OPK='',OPS=[],QC=[],SH=0,EM='flip',ALL=0,SQ='';
+let S={xp:0,streak:0,last:'',day:'',today:0,goal:20,lv:'N5',cards:{},custom:[],ck:[],ckm:0,words:[...CUR],tts:true,sfx:true,filter:'all',theme:'auto',hist:{},newMax:10,revMax:100,nn:0,nd:''},T='cards',A='h',KD=null,RV=0,flip=0,Q=[],AS=null,KL='N5',RT=0,SX=0,PV=0,fresh=0,FI=null,PT=0,AN=null,OPK='',OPS=[],QC=[],SH=0,EM='flip',ALL=0,SQ='';
 const INT=[0,1,2,4,8,16,32,64];
 const td=(o=0)=>new Date(Date.now()-new Date().getTimezoneOffset()*6e4+o*864e5).toISOString().slice(0,10);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
@@ -22,7 +27,7 @@ const say=(t,el,force)=>{if(!(force||S.tts)||!window.speechSynthesis)return;cons
 const SPK='<svg class="vi" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9.5v5h4l5 4.5V5L7 9.5z" fill="currentColor"/><path class="w1" d="M15.5 9a4 4 0 0 1 0 6"/><path class="w2" d="M18 6.5a8 8 0 0 1 0 11"/></svg>';
 const sayEl=b=>say(b.dataset.t,b,1);
 const vb=(t,k='')=>window.speechSynthesis?`<span class="vg ${k=='lg'?'col':''}"><button class="vb ${k}" data-t="${esc(t)}" onclick="event.stopPropagation();sayEl(this)" aria-label="Play audio">${SPK}</button>${k=='lg'?`<button class="vb sm" data-t="${esc(t)}" data-r=".6" onclick="event.stopPropagation();sayEl(this)" aria-label="Play slowly">${SPK}<small>slow</small></button>`:''}</span>`:'';
-const hud=()=>{$('#hud').innerHTML=`${ic('fire')} ${st()} &nbsp; ${ic('star')} ${S.xp}`};
+const hud=()=>{$('#hud').innerHTML=`<span class=hs>${ic('fire')}<b>${st()}</b></span><span class=hs>${ic('star')}<b>${S.xp}</b></span>`};
 const shuf=a=>{const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[b[i],b[j]]=[b[j],b[i]]}return b};
 let SB=null,AD=0,SD=1;
 const isK=c=>/[\u4e00-\u9fff]/.test(c);
@@ -60,18 +65,23 @@ function bump(){if(S.day!=td()){S.day=td();S.today=0}if(S.last!=td()){S.streak=S
 const st=()=>S.last==td()||S.last==td(-1)?S.streak:0;
 function addSet(){const ids=A=='h'?H.map((_,i)=>'h:'+i):A=='k'?K.map((_,i)=>'k:'+i):A=='x'?S.ck.map(x=>'x:'+x.id):KJ.filter(k=>k[5]==KL).map(k=>'j:'+k[0]);if(!ids.length)return toast('Add a custom kanji first');let n=0;
  ids.forEach(id=>{if(!S.cards[id]){S.cards[id]={b:0,d:td()};n++}});save();markIn();toast(n?n+' cards added to deck':'Already all in your deck')}
-const ORD=['h','k','j','x'],LV=['N5','N4','N3'],AL={h:'ひらがな',k:'カタカナ',j:'漢字',x:'Custom'};
+const ORD=['h','k','j','x'],LV=['N5','N4','N3','N2','N1'],AL={h:'Hiragana',k:'Katakana',j:'Kanji',x:'Custom'};
 const segH=(id,L,cur,fn,lbl)=>`<div class=seg id=${id} style="--n:${L.length};--i:${L.indexOf(cur)}"><i class=pill></i>${L.map(k=>`<button class="${k==cur?'on':''}" onclick="${fn}('${k}')">${lbl?lbl[k]:k}</button>`).join('')}</div>`;
 // kana are laid out in gojuon rows (a-i-u-e-o, ka-ki-ku-ke-ko ...); ya/yu/yo and wa/wo/n sit in columns 1, 3, 5
 const GROW=[[0,5],[5,10],[10,15],[15,20],[20,25],[25,30],[30,35],[35,38],[38,43],[43,46],[46,51],[51,56],[56,61],[61,66],[66,71]];
 const tileH=(id,c,r,n,col)=>`<div class="tile${S.cards[id]?' in':''}${SEL&&SEL.has(id)?' sel':''}${[...c].length>2?' w':''}" data-id="${id}" style="--k:${Math.min(n,24)}${col?`;grid-column:${col}`:''}" onclick="tapT(this,'${id}')"><b>${esc(c)}</b><small>${esc(r)}</small></div>`;
 function gridH(){
  if(A=='x')return `<button class="btn alt" onclick="CKE='';render()">+ New custom kanji</button>`+(S.ck.length?`<div class=grid>${S.ck.map((x,n)=>tileH('x:'+x.id,x.w,x.r,n)).join('')}</div>`:`<p class=cred>Kanji and kanji combinations that aren't in the built-in list live here. Add one, or tap an underlined kanji inside a sentence to give it a reading.</p>`);
- if(A=='j')return `<div class=grid>${KJ.filter(k=>k[5]==KL).map((k,n)=>tileH('j:'+k[0],k[0],k[1].split(', ')[0],n)).join('')}</div>`;
+ if(A=='j'){const l=jList();return `<div class=grid>${l.slice(0,JN).map(jTile).join('')}</div><div id=jm>${moreH(l.length)}</div>`}
  const L=A=='h'?H:K;
  return `<div class=kgrid>${GROW.map(([a,b])=>`${a==46?'<div class=gl>Dakuten ゛</div>':a==66?'<div class=gl>Handakuten ゜</div>':''}<div class=krow>${L.slice(a,b).map((c,j)=>tileH(A+':'+(a+j),c,R[a+j],a+j,b-a==3?[1,3,5][j]:0)).join('')}</div>`).join('')}</div>`}
 let SEL=null,DF='all',DQ='',DL=60;
-const tids=()=>[...document.querySelectorAll('#gw .tile')].map(t=>t.dataset.id);
+// Kanji grid renders in batches so N2/N1 (hundreds of tiles) stay smooth
+const JB=180;let JN=JB;
+const jList=()=>KJ.filter(k=>k[5]==KL),jTile=(k,n)=>tileH('j:'+k[0],k[0],k[1].split(', ')[0],n);
+const moreH=t=>t>JN?`<button class=kmore onclick="moreJ()">Show ${Math.min(JB,t-JN)} more<small>${JN} of ${t} shown</small></button>`:'';
+function moreJ(){const l=jList(),a=JN,g=$('#gw .grid');if(!g)return;JN=Math.min(l.length,JN+JB);$('#gw').style.setProperty('--dir',0);g.insertAdjacentHTML('beforeend',l.slice(a,JN).map((k,n)=>jTile(k,n)).join(''));$('#jm').innerHTML=moreH(l.length)}
+const tids=()=>A=='j'?jList().map(k=>'j:'+k[0]):[...document.querySelectorAll('#gw .tile')].map(t=>t.dataset.id);
 function markIn(){document.querySelectorAll('#gw .tile').forEach((t,i)=>{const was=t.classList.contains('in'),now=!!S.cards[t.dataset.id];t.classList.toggle('in',now);t.classList.toggle('sel',!!(SEL&&SEL.has(t.dataset.id)));if(now&&!was){pop(t);t.style.animationDelay=Math.min(i,40)*12+'ms'}})}
 // Select mode works on everything: tap any tiles, then add the ones that are new or remove the ones already in the deck
 function tapT(el,id){if(SEL){SEL.has(id)?SEL.delete(id):SEL.add(id);el.classList.toggle('sel',SEL.has(id));return selBar()}
@@ -91,7 +101,7 @@ function swChips(){const g=$('#gw');if(!g)return;
  [['sg1',ORD,A],['sg2',LV,KL]].forEach(([id,L,cur])=>{const e=$('#'+id),n=L.indexOf(cur);e.style.setProperty('--i',n);[...e.querySelectorAll('button')].forEach((b,k)=>b.classList.toggle('on',k==n))});
  $('#lvw').classList.toggle('open',A=='j');g.style.setProperty('--dir',SD>0?1:-1);g.innerHTML=gridH();selBar()}
 function setA(k){if(k==A)return;SD=ORD.indexOf(k)-ORD.indexOf(A);A=k;swChips()}
-function setKL(l){if(l==KL)return;SD=LV.indexOf(l)-LV.indexOf(KL);KL=l;swChips()}
+function setKL(l){if(l==KL)return;SD=LV.indexOf(l)-LV.indexOf(KL);KL=l;JN=JB;swChips()}
 const views={
 alpha(){if(KD)return(KD.startsWith('x:')?xdetail(KD.slice(2)):kdetail(KD))+(CKE!==null?ckSheet():'');
  return segH('sg1',ORD,A,'setA',AL)+`<div class="lvw ${A=='j'?'open':''}" id=lvw><div><div style="margin-top:8px">${segH('sg2',LV,KL,'setKL')}</div></div></div>
@@ -106,11 +116,12 @@ cards(){if(RV)return review();const due=dueIds(),i=Math.floor(Date.now()/864e5)%
 prof(){const n=Object.keys(S.cards).length,m=Object.values(S.cards).filter(c=>(c.i||0)>=21).length;
  return `<div class=hero>${ic('fire')} ${st()}<small> day streak</small></div><p><b>Today:</b> ${S.day==td()?S.today:0}/${S.goal} reviews</p><div class=bar><div style="width:${Math.min(100,(S.day==td()?S.today:0)/S.goal*100)}%"></div></div>
  <p>${ic('star')} ${S.xp} XP · ${ic('cards')} ${n} cards · ${ic('medal')} ${m} mastered</p><h3>Last 5 weeks</h3>${cal()}
- <label>My level<select onchange="S.lv=this.value;save()">${['Pre-N5','N5','N4','N3'].map(l=>`<option ${S.lv==l?'selected':''}>${l}</option>`).join('')}</select></label>
+ <label>My level<select onchange="S.lv=this.value;save()">${['Pre-N5','N5','N4','N3','N2','N1'].map(l=>`<option ${S.lv==l?'selected':''}>${l}</option>`).join('')}</select></label>
  <label>Daily goal (reviews)<input type=number value=${S.goal} onchange="S.goal=+this.value||20;save();render()"></label>
  <label>Theme<select onchange="S.theme=this.value;save();theme()">${['auto','light','dark'].map(t=>`<option ${S.theme==t?'selected':''}>${t}</option>`).join('')}</select></label>
  <label>New cards per day<input type=number min=0 value=${S.newMax} onchange="S.newMax=Math.max(0,+this.value);save()"></label><label>Max reviews per day<input type=number min=1 value=${S.revMax} onchange="S.revMax=Math.max(1,+this.value||100);save()"></label>
  <label><input type=checkbox style="width:auto" ${S.tts?'checked':''} onchange="S.tts=this.checked;save()"> Read cards aloud</label>
+  <label><input type=checkbox style="width:auto" ${S.sfx!==false?'checked':''} onchange="S.sfx=this.checked;save();if(this.checked)SFX.ok()"> Sound effects</label>
  <button class=btn onclick="startTest()">Fluency check (N5–N3)</button>
  <button class="btn alt" onclick="chat()">Practice with ChatGPT</button>
  <button class="btn alt" onclick="exp()">Export backup</button>
@@ -149,7 +160,7 @@ function kdetail(c){const k=KM[c],ws=S.words.map((w,i)=>[w,i]).filter(([w])=>w.w
 async function play(){const my=++PT,ps=[...document.querySelectorAll('#sv path')];ps.forEach(p=>{p.getAnimations().forEach(a=>a.cancel());const L=p.getTotalLength();p.style.strokeDasharray=L;p.style.strokeDashoffset=L;p.style.opacity=0});
  for(const p of ps){if(my!=PT||!p.isConnected)return;const L=p.getTotalLength();p.style.opacity=1;await p.animate([{strokeDashoffset:L},{strokeDashoffset:0}],{duration:250+L*10,easing:'ease-in-out',fill:'forwards'}).finished}}
 function pop(e){e.style.animationDelay='';e.classList.remove('p');void e.offsetWidth;e.classList.add('p')}
-function fb(g,t){const e=document.createElement('div');e.className='fb '+(g?'good':'bad');e.textContent=t||(g?['Great!','Nice!','Correct!','Awesome!'][Math.random()*4|0]+' +10 XP':'Keep practicing! +2 XP');document.body.append(e);navigator.vibrate?.(g?20:[30,40,30]);setTimeout(()=>e.remove(),1000)}
+function fb(g,t){if(S.sfx!==false)SFX[g?'ok':'bad']();const e=document.createElement('div');e.className='fb '+(g?'good':'bad');e.textContent=t||(g?['Great!','Nice!','Correct!','Awesome!'][Math.random()*4|0]+' +10 XP':'Keep practicing! +2 XP');document.body.append(e);navigator.vibrate?.(g?20:[30,40,30]);setTimeout(()=>e.remove(),1000)}
 function confetti(){for(let i=0;i<40;i++){const e=document.createElement('i');e.className='cf';e.style.cssText=`left:${Math.random()*100}vw;background:${['#58CC02','#1CB0F6','#FF4B4B','#FF9600','#FFC800'][i%5]};animation-delay:${Math.random()*.4}s`;document.body.append(e);setTimeout(()=>e.remove(),2200)}}
 function initCv(){const c=$('#cv');if(!c)return;const x=c.getContext('2d');x.lineWidth=10;x.lineCap=x.lineJoin='round';x.strokeStyle='#1CB0F6';let d=0;
  const p=e=>{const r=c.getBoundingClientRect();return[(e.clientX-r.left)*300/r.width,(e.clientY-r.top)*300/r.height]};
@@ -160,7 +171,8 @@ function emode(id){const s=S.cards[id],i=s.i||0,r=Math.random(),k='hkjx'.include
  if(!s.r)return'flip';if(i<3)return'choice';
  if(i<10)return k&&r<.4?'type':sp&&r<.7?'listen':'choice';
  return k&&r<.5?'type':sp&&r<.8?'listen':'choice'}
-function opts(id,c,L){const t=id[0],ans=L?c.say:c.a,pool=L?(t=='h'?H:t=='k'?K:t=='j'?KJ.map(k=>k[0]):t=='x'?[...S.ck.map(x=>x.r),...WORDS.map(w=>w[1])]:[...S.custom.map(x=>x.t),...WORDS.map(w=>w[0])]):(t=='h'||t=='k'?R:t=='j'?KJ.map(k=>k[1].split(', ')[0]):t=='x'?[...S.ck.map(x=>x.m||x.r),...WORDS.map(w=>w[2])]:[...S.custom.map(x=>x.m),...WORDS.map(w=>w[2])]),o=new Set([ans]);let n=0;
+const KP=id=>{const k=KM[id.slice(2)];return k?KJ.filter(x=>x[5]==k[5]):KJ};
+function opts(id,c,L){const t=id[0],ans=L?c.say:c.a,pool=L?(t=='h'?H:t=='k'?K:t=='j'?KP(id).map(k=>k[0]):t=='x'?[...S.ck.map(x=>x.r),...WORDS.map(w=>w[1])]:[...S.custom.map(x=>x.t),...WORDS.map(w=>w[0])]):(t=='h'||t=='k'?R:t=='j'?KP(id).map(k=>k[1].split(', ')[0]):t=='x'?[...S.ck.map(x=>x.m||x.r),...WORDS.map(w=>w[2])]:[...S.custom.map(x=>x.m),...WORDS.map(w=>w[2])]),o=new Set([ans]);let n=0;
  while(o.size<4&&n++<300){const x=pool[Math.random()*pool.length|0];if(x&&x!=ans)o.add(x)}return[...o].sort(()=>Math.random()-.5)}
 function pick(j){const c=card(Q[0]);AN={ok:OPS[j]==(EM=='listen'?c.say:c.a)};fb(AN.ok);say(c.say);render()}
 function chk(){const v=$('#ty').value.trim().toLowerCase(),c=card(Q[0]);AN={ok:!!v&&c.acc.includes(v)};fb(AN.ok);say(c.say);render()}
@@ -222,7 +234,7 @@ QS.push(['N5','「みせ」の かんじは?',['店','庭','広','座'],0],['N5'
 function startTest(){QC=[];for(const L of['N5','N4','N3'])QS.filter(q=>q[0]==L).sort(()=>Math.random()-.5).slice(0,5).forEach(q=>{const o=q[2].map((t,i)=>[t,i==q[3]]).sort(()=>Math.random()-.5);QC.push([L,q[1],o.map(x=>x[0]),o.findIndex(x=>x[1])])});AS={i:0,sc:{N5:0,N4:0,N3:0}};go('test')}
 // ---- Deck manager: see every card, filter/search, remove (with undo)
 const DK=()=>Object.keys(S.cards).filter(k=>card(k));
-const DFL=[['all','All'],['h','ひらがな'],['k','カタカナ'],['j','漢字'],['x','Custom kanji'],['c','Words']];
+const DFL=[['all','All'],['h','Hiragana'],['k','Katakana'],['j','Kanji'],['x','Custom kanji'],['c','Words']];
 const dstat=x=>!x.r?'New':x.d<=td()?'Due':(x.i||0)>=21?'Mastered':'Learning';
 function deckIds(){const q=DQ.trim().toLowerCase();return DK().filter(id=>{if(DF!='all'&&id[0]!=DF)return false;if(!q)return true;const c=card(id);
  return[c.say,c.w||'',c.a,String(c.b).replace(/<[^>]+>/g,' '),id[0]=='c'?furi(c.say).replace(/<[^>]+>/g,''):''].some(x=>String(x).toLowerCase().includes(q))})}
@@ -248,7 +260,7 @@ views.deck=()=>`<div class=rh><button class=ib onclick="go('cards')" aria-label=
 // ---- Sentence builder: tap word chips into order. Words come from sentences.js plus your own sentence cards typed with spaces.
 const fp=t=>furi(t).replace(/<span class=unk onclick="[^"]*">/g,'<span>');
 const chipH=(t,fn,cls='')=>`<button class="chip ${cls}" ${fn?`onclick="${fn}"`:'disabled'}>${fp(t)}</button>`;
-function sentPool(){const L={N5:1,N4:2,N3:3},lv=({'Pre-N5':1,N5:1,N4:2,N3:3})[S.lv]||1;
+function sentPool(){const L={N5:1,N4:2,N3:3,N2:4,N1:5},lv=({'Pre-N5':1,N5:1,N4:2,N3:3,N2:4,N1:5})[S.lv]||1;
  return[...S.custom.filter(c=>c.p&&c.p.length>1).map(c=>({p:c.p,m:c.m,c:1,f:0})),...SENT.filter(x=>L[x[0]]<=lv).map(x=>({p:x[1].split(' '),m:x[2],f:x[3]}))]}
 function startBuild(){const P=shuf(sentPool()),cu=P.filter(x=>x.c).slice(0,2),r=P.filter(x=>!x.c).slice(0,6-cu.length);SB={q:shuf([...cu,...r]),i:0,sc:0,xp:0};nextB();go('build')}
 function nextB(){const q=SB.q[SB.i];let b;for(let n=0;n<9;n++){b=shuf(q.p.map((t,k)=>({t,k})));if(q.p.length<2||b.some((x,j)=>x.k!=j))break}SB.bank=b;SB.ans=[];SB.res=null;SB.mv=null}

@@ -1,11 +1,12 @@
+@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=M+PLUS+Rounded+1c:wght@500;700;800&display=swap");
 :root{--g:#58CC02;--gd:#58A700;--b:#1CB0F6;--bd:#1899D6;--r:#FF4B4B;--o:#FF9600;--y:#FFC800;--t:#3C3C3C;--s:#777;--l:#E5E5E5;--bg:#fff;--hl:#DDF4FF;--in:#f7f7f7;--okbg:#D7FFB8;--badbg:#FFDFE0;--gs:#0002;--e:cubic-bezier(.2,.9,.2,1)}
 :root[data-theme=dark]{--bg:#131F24;--t:#E5EEF2;--s:#8FA3AD;--l:#2B3B44;--hl:#1B3A4B;--in:#1B2A31;--okbg:#22400F;--badbg:#4A2024;--gs:#fff3;color-scheme:dark}
-*{box-sizing:border-box}body{margin:0;font-family:Nunito,"Segoe UI",system-ui,"Hiragino Sans","Yu Gothic",sans-serif;color:var(--t);background:var(--bg)}
-header{position:sticky;top:0;z-index:5;background:var(--g);color:#fff;display:flex;justify-content:space-between;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;font-size:20px}#hud{font-size:15px;font-weight:800}
+*{box-sizing:border-box}body{margin:0;font-family:Nunito,"M PLUS Rounded 1c","Hiragino Maru Gothic ProN","Hiragino Sans","Yu Gothic",system-ui,sans-serif;font-weight:700;-webkit-font-smoothing:antialiased;color:var(--t);background:var(--bg)}
+header{position:sticky;top:0;z-index:5;background:var(--g);color:#fff;display:flex;justify-content:space-between;align-items:center;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;font-size:20px;line-height:1.2}#hud{font-size:15px;font-weight:800;display:flex;align-items:center;gap:16px;line-height:1.2}.hs{display:inline-flex;align-items:center;gap:5px}#hud .ic{width:1.3em;height:1.3em;vertical-align:baseline;display:block}
 main{max-width:640px;margin:auto;padding:16px 16px 110px}
 nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--bg);border-top:2px solid var(--l);padding-bottom:env(safe-area-inset-bottom)}
 nav button{flex:1;border:0;background:none;padding:8px;font-weight:700;font-size:12px;font-family:inherit;color:var(--s);display:flex;flex-direction:column;align-items:center}nav i{font-style:normal;font-size:24px}
-nav button.on{color:var(--bd);background:var(--hl);border-radius:14px;outline:2px solid var(--b);outline-offset:-4px}
+nav button.on{color:var(--gd);background:var(--okbg);background:color-mix(in srgb,var(--g) 14%,var(--bg));border-radius:14px;outline:2px solid var(--g);outline-offset:-4px}:root[data-theme=dark] nav button.on{color:var(--g)}
 .btn{display:block;width:100%;margin:10px 0;padding:13px;border:0;border-radius:16px;background:var(--g);color:#fff;font-weight:800;font-size:16px;font-family:inherit;box-shadow:0 4px 0 var(--gd);cursor:pointer;text-transform:none}
 .btn:active{transform:translateY(4px);box-shadow:none}.btn.alt{background:var(--b);box-shadow:0 4px 0 var(--bd)}.btn.no{background:var(--r);box-shadow:0 4px 0 #D33}.btn:disabled{background:var(--l);box-shadow:0 4px 0 #bbb;color:#999}
 .row2{display:flex;gap:10px}.row2 .btn{flex:1}
@@ -28,7 +29,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
 .sv{display:block;width:200px;height:200px;margin:auto;stroke:var(--g);stroke-width:4;border:2px solid var(--l);border-radius:16px}
 .cred{font-size:12px;color:var(--s)}a{color:var(--bd);font-weight:800}
 @keyframes grow{from{width:var(--f,0%)}}@keyframes pop{50%{transform:scale(1.12)}}@keyframes slide{from{transform:translateX(60px);opacity:0}}@keyframes hop{40%{transform:translateY(-8px)}}@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}@keyframes up{from{transform:translateY(100%)}}@keyframes out{to{opacity:0}}@keyframes fall{to{transform:translateY(105vh) rotate(540deg)}}
-.tile.p,.back{animation:pop .35s}.fc.in{animation:slide .35s}nav .on i{animation:hop .45s}.bounce{animation:hop .8s infinite;font-size:64px}
+.tile.p,.back{animation:pop .35s}.fc.in{animation:slide .35s}nav i{display:inline-block;transition:transform .18s var(--e)}nav button.on i{transform:scale(1.15)}nav button:active i{transform:scale(1.28)}.bounce{animation:hop .8s infinite;font-size:64px}
 .opt.ok{border-color:var(--g);background:var(--okbg);animation:pop .35s}.opt.bad{border-color:var(--r);background:var(--badbg);animation:shake .4s}
 .fb{position:fixed;left:0;right:0;bottom:calc(64px + env(safe-area-inset-bottom));padding:16px 20px;font-weight:800;font-size:18px;z-index:8;animation:up .25s,out .25s .75s forwards}.fb.good{background:var(--okbg);color:var(--gd)}.fb.bad{background:var(--badbg);color:#EA2B2B}
 .cf{position:fixed;top:-20px;width:10px;height:14px;border-radius:3px;z-index:9;animation:fall 1.6s ease-in forwards}
@@ -50,7 +51,7 @@ input,textarea,select{color:var(--t)}
 .lvw{display:grid;grid-template-rows:0fr;opacity:0;visibility:hidden;transition:grid-template-rows .4s var(--e),opacity .3s,visibility 0s .4s}
 .lvw.open{grid-template-rows:1fr;opacity:1;visibility:visible;transition:grid-template-rows .4s var(--e),opacity .3s,visibility 0s}
 .lvw>div{overflow:hidden;min-height:0}
-#gw .tile:not(.p){animation:tilein .4s var(--e) both;animation-delay:calc(var(--k,0)*14ms)}
+#gw .tile:not(.p){animation:tilein .4s var(--e) both;animation-delay:min(calc(var(--k,0)*14ms),360ms)}
 @keyframes tilein{from{opacity:0;transform:translateX(calc(var(--dir,0)*28px)) scale(.88)}}
 /* Duolingo-style voice button */
 .vg{display:inline-flex;align-items:center;gap:10px;vertical-align:middle}.vg.col{flex-direction:column;gap:12px}
@@ -107,10 +108,11 @@ nav button{flex-direction:row;justify-content:flex-start;gap:14px;padding:14px 1
 nav kbd{display:inline-block}
 nav button.on{outline-offset:-2px}
 nav button:hover:not(.on){background:var(--in);color:var(--t)}
-nav button:focus-visible{outline:2px solid var(--b);outline-offset:2px}
+nav button:focus-visible{outline:2px solid var(--g);outline-offset:2px}
 main{max-width:720px;position:relative;left:calc(var(--sw)/2);padding-bottom:60px}
 body.sm main{padding-bottom:110px}
 .fb,#selbar{left:var(--sw);bottom:0}
 .sn,#toast{bottom:24px;left:calc(50% + var(--sw)/2)}
 .sheet{align-items:center;justify-content:center}.sheet>div{margin:auto;max-width:520px;border-radius:24px;padding-bottom:20px}
 }
+.kmore{display:block;width:100%;margin:14px 0 4px;padding:12px;border:2px solid var(--l);border-bottom-width:4px;border-radius:14px;background:var(--bg);color:var(--bd);font:inherit;font-weight:700;cursor:pointer;transition:transform .12s var(--e),background .2s}.kmore:active{transform:translateY(2px)}.kmore small{display:block;color:var(--s);font-weight:400}

@@ -1,4 +1,4 @@
-// Duolingo-style answer sounds (Web Audio, no files). Called from fb(); toggle: S.sfx in Profile.
+// Duolingo-style answer sounds (Web Audio, no files). Called from fb(); toggle: S.sfx in Settings.
 const SFX=(()=>{let c=null;const ac=()=>{try{if(!c){const A=window.AudioContext||window.webkitAudioContext;if(!A)return null;c=new A()}if(c.state==='suspended')c.resume();return c}catch(e){return null}};
 const note=(c,f,t,d,ty,v,lp)=>{const o=c.createOscillator(),o2=c.createOscillator(),g=c.createGain(),g2=c.createGain(),F=c.createBiquadFilter();o.type=ty;o2.type='sine';o.frequency.value=f;o2.frequency.value=f*2;F.type='lowpass';F.frequency.value=lp;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+d);g2.gain.value=.25;o.connect(g);o2.connect(g2);g2.connect(g);g.connect(F);F.connect(c.destination);o.start(t);o2.start(t);o.stop(t+d+.05);o2.stop(t+d+.05)};
 return{ok(){const x=ac();if(!x)return;const t=x.currentTime+.01;note(x,784,t,.28,'triangle',.22,6e3);note(x,1046.5,t+.09,.3,'triangle',.22,6e3);note(x,1318.5,t+.18,.55,'triangle',.24,7e3)},
@@ -107,25 +107,28 @@ alpha(){if(KD)return(KD.startsWith('x:')?xdetail(KD.slice(2)):kdetail(KD))+(CKE!
  return segH('sg1',ORD,A,'setA',AL)+`<div class="lvw ${A=='j'?'open':''}" id=lvw><div><div style="margin-top:8px">${segH('sg2',LV,KL,'setKL')}</div></div></div>
  <div class=row2><button class=btn onclick="addSet()">+ Add all</button><button class="btn alt" id=selbtn onclick="toggleSel()">${SEL?'Cancel':'Select'}</button></div><div id=gw>${gridH()}</div><div id=selbar></div>${CKE!==null?ckSheet():''}`},
 cards(){if(RV)return review();const due=dueIds(),i=Math.floor(Date.now()/864e5)%WORDS.length,dw={w:WORDS[i][0],r:WORDS[i][1],m:WORDS[i][2]},inD=S.custom.some(x=>x.t==dw.w);
- return `<div class=hero>${due.length}<small> to study</small><div style="font-size:14px;color:var(--s)">${due.filter(k=>!S.cards[k].r).length} new · ${due.filter(k=>S.cards[k].r).length} review</div><div class=row2><button class=btn onclick="startRev()" ${due.length?'':'disabled'}>Start review</button><button class="btn alt" onclick="startBuild()">Build sentences</button></div></div>
+ return `${S.name?`<h2 class=hi>Hello, ${esc(S.name)}!</h2>`:''}${lvl()}<div class=hero>${due.length}<small> to study</small><div style="font-size:14px;color:var(--s)">${due.filter(k=>!S.cards[k].r).length} new · ${due.filter(k=>S.cards[k].r).length} review</div><div class=row2><button class=btn onclick="startRev()" ${due.length?'':'disabled'}>Start review</button><button class="btn alt" onclick="startBuild()">Build sentences</button></div></div>
  
  <div class=card2><b>My deck</b> <small>${DK().length} cards · ${DK().filter(k=>!S.cards[k].r).length} new</small><div class=row2><button class="btn alt" onclick="go('deck')">View &amp; manage</button><button class=btn onclick="AD=1;render()">+ Add card</button></div></div>
+ <div class=card2><small>Word of the day</small><div class=wd><div class=jp>${furi(dw.w)}</div>${vb(dw.w)}</div>${esc(dw.m)}<button class="btn alt" onclick="addC(${i})">${inD?'In deck':'+ Add to deck'}</button></div>
  ${forecast()}
- <div class=card2><small>Word of the day</small><div class=wd><div class=jp>${furi(dw.w)}</div>${vb(dw.w)}</div>${esc(dw.m)}<button class="btn alt" ${inD?'disabled':''} onclick="addC(${i})">${inD?'In deck ✓':'+ Add to deck'}</button></div>
  ${AD?addSheet():''}`},
 prof(){const n=Object.keys(S.cards).length,m=Object.values(S.cards).filter(c=>(c.i||0)>=21).length;
  return `<div class=hero>${ic('fire')} ${st()}<small> day streak</small></div><p><b>Today:</b> ${S.day==td()?S.today:0}/${S.goal} reviews</p><div class=bar><div style="width:${Math.min(100,(S.day==td()?S.today:0)/S.goal*100)}%"></div></div>
  <p>${ic('star')} ${S.xp} XP · ${ic('cards')} ${n} cards · ${ic('medal')} ${m} mastered</p><h3>Last 5 weeks</h3>${cal()}
- <label>My level<select onchange="S.lv=this.value;save()">${['Pre-N5','N5','N4','N3','N2','N1'].map(l=>`<option ${S.lv==l?'selected':''}>${l}</option>`).join('')}</select></label>
- <label>Daily goal (reviews)<input type=number value=${S.goal} onchange="S.goal=+this.value||20;save();render()"></label>
- <label>Theme<select onchange="S.theme=this.value;save();theme()">${['auto','light','dark'].map(t=>`<option ${S.theme==t?'selected':''}>${t}</option>`).join('')}</select></label>
- <label>New cards per day<input type=number min=0 value=${S.newMax} onchange="S.newMax=Math.max(0,+this.value);save()"></label><label>Max reviews per day<input type=number min=1 value=${S.revMax} onchange="S.revMax=Math.max(1,+this.value||100);save()"></label>
- <label><input type=checkbox style="width:auto" ${S.tts?'checked':''} onchange="S.tts=this.checked;save()"> Read cards aloud</label>
-  <label><input type=checkbox style="width:auto" ${S.sfx!==false?'checked':''} onchange="S.sfx=this.checked;save();if(this.checked)SFX.ok()"> Sound effects</label>
+ <h3 class=sh>Your name</h3><input maxlength=24 placeholder="What should we call you?" value="${esc(S.name||'')}" onchange="S.name=this.value.trim();save()">
+ <h3 class=sh>My level</h3><div class=lvs id=lvs>${['Pre-N5','N5','N4','N3','N2','N1'].map(l=>`<button class="${S.lv==l?'on':''}" onclick="setLv('${l}')">${l}</button>`).join('')}</div>
+
  <button class=btn onclick="startTest()">Fluency check (N5–N3)</button>
- <button class="btn alt" onclick="chat()">Practice with ChatGPT</button>
- <button class="btn alt" onclick="exp()">Export backup</button>
- <button class="btn alt" onclick="$('#im').click()">Import backup</button><input id=im type=file accept=.json hidden onchange="imp(this.files[0])"><p class=cred>Stroke data: KanjiVG (CC BY-SA 3.0). Kanji: KANJIDIC (EDRDG, CC BY-SA 4.0). Word lists: JLPT lists by Jonathan Waller, via JMdict data.</p>`},
+ <button class="btn alt" onclick="chat()">Practice with ChatGPT</button>`},
+set(){const on=k=>k=='sfx'?S.sfx!==false:!!S.tts,TH=['auto','light','dark'],
+ sp=(k,l)=>`<div class=st><span>${l}</span><div class=sp><button onclick="stp('${k}',-1)" aria-label="Decrease">−</button><input type=number id=s_${k} value=${S[k]} min=${SM[k][0]} onchange="stSet('${k}',this.value)"><button onclick="stp('${k}',1)" aria-label="Increase">+</button></div></div>`,
+ tg=(k,l,i)=>`<div class=tgc><button class="tg${on(k)?'':' off'}" aria-pressed=${on(k)} aria-label="${l}" onclick="tgl('${k}',this)">${i}<svg class=sl viewBox="0 0 24 24"><path class=o d="M4.5 4.5L19.5 19.5"/><path class=w d="M4.5 4.5L19.5 19.5"/></svg></button><span>${l}</span></div>`;
+ return `<h3 class=sh>Study</h3>${sp('goal','Daily goal (reviews)')}${sp('newMax','New cards per day')}${sp('revMax','Max reviews per day')}
+ <h3 class=sh>Sound</h3><div class=tgs>${tg('tts','Read cards aloud',SPK)}${tg('sfx','Sound effects','<svg class=vi viewBox="0 0 24 24"><path d="M9 18V6l10-2v12" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6.5" cy="18" r="3" fill="currentColor" stroke="none"/><circle cx="16.5" cy="16" r="3" fill="currentColor" stroke="none"/></svg>')}</div>
+ <h3 class=sh>Appearance</h3>${segH('thm',TH,S.theme,'setTheme',{auto:'Auto',light:'Light',dark:'Dark'})}
+ <h3 class=sh>Backup</h3><div class=row2><button class="btn alt" onclick="exp()">Export backup</button><button class="btn alt" onclick="$('#im').click()">Import backup</button></div><input id=im type=file accept=.json hidden onchange="imp(this.files[0])">
+ <p class=cred>Stroke data: KanjiVG (CC BY-SA 3.0). Kanji: KANJIDIC (EDRDG, CC BY-SA 4.0). Word lists: JLPT lists by Jonathan Waller, via JMdict data.</p>`},
 test(){if(AS.i>=QC.length){let l='Pre-N5';for(const x of['N5','N4','N3']){if(AS.sc[x]>=3)l=x;else break}
  return `<div class=hero>${l}<small> estimated</small></div><p>N5 ${AS.sc.N5}/5 · N4 ${AS.sc.N4}/5 · N3 ${AS.sc.N3}/5</p><p>This is a rough estimate from a short quiz. It does not test listening or speaking.</p><button class=btn onclick="S.lv='${l}';save();go('prof')">Set as my level</button>`}
  const q=QC[AS.i];return `<small>${q[0]} · ${AS.i+1}/${QC.length}</small><div class=q>${q[1]}</div>${q[2].map((o,j)=>`<button class="btn opt" onclick="ans(${j},this)">${o}</button>`).join('')}`}};
@@ -156,7 +159,7 @@ function kdetail(c){const k=KM[c],ws=S.words.map((w,i)=>[w,i]).filter(([w])=>w.w
  return `<button class=link onclick="KD=null;render()">${SYS.back} Back</button><div class=kd><div class=big>${c}</div><h2>${k[1]}</h2><p>音 ${k[2]}<br>訓 ${k[3]}<br><small>${k[4]} strokes · ${k[5]}</small></p></div><div style="text-align:center;margin:8px 0">${vb(c,'lg')}</div><button class="btn ${S.cards['j:'+c]?'no':'alt'}" onclick="addJ('${c}',this)">${S.cards['j:'+c]?'Remove from deck':'+ Add kanji to deck'}</button>
  <h3>Stroke order</h3><svg id=sv class=sv viewBox="0 0 109 109" onclick="play()">${sp}</svg><button class="btn alt" onclick="play()">${SYS.play} Play again</button>
  <h3>Trace it</h3><div class=pad><svg class=guide viewBox="0 0 109 109">${sp}</svg><canvas id=cv width=300 height=300></canvas></div><button class="btn alt" onclick="clr()">Clear</button>
- <h3>Compounds</h3>${ws.map(([w,i])=>{const d=S.custom.some(x=>x.t==w.w);return `<div class="row crow"><div><b class=jp>${furi(w.w)}</b> ${esc(w.m)}${w.n?`<br><small>${esc(w.n)}</small>`:''}</div><div class=ca>${vb(w.w)}<button class="btn alt cadd" ${d?'disabled':''} onclick="addW(${i},this)">${d?'In deck ✓':'+ Add to deck'}</button></div></div>`}).join('')||'<p>None yet. Add one in Flash Cards.</p>'}`}
+ <h3>Compounds</h3>${ws.map(([w,i])=>{const d=S.custom.some(x=>x.t==w.w);return `<div class="row crow"><div><b class=jp>${furi(w.w)}</b> ${esc(w.m)}${w.n?`<br><small>${esc(w.n)}</small>`:''}</div><div class=ca>${vb(w.w)}<button class="btn alt cadd" ${d?'disabled':''} onclick="addW(${i},this)">${d?'In deck':'+ Add to deck'}</button></div></div>`}).join('')||'<p>None yet. Add one in Flash Cards.</p>'}`}
 async function play(){const my=++PT,ps=[...document.querySelectorAll('#sv path')];ps.forEach(p=>{p.getAnimations().forEach(a=>a.cancel());const L=p.getTotalLength();p.style.strokeDasharray=L;p.style.strokeDashoffset=L;p.style.opacity=0});
  for(const p of ps){if(my!=PT||!p.isConnected)return;const L=p.getTotalLength();p.style.opacity=1;await p.animate([{strokeDashoffset:L},{strokeDashoffset:0}],{duration:250+L*10,easing:'ease-in-out',fill:'forwards'}).finished}}
 function pop(e){e.style.animationDelay='';e.classList.remove('p');void e.offsetWidth;e.classList.add('p')}
@@ -192,6 +195,7 @@ function review(){if(!Q.length)return `<div class=hero><div class=bounce>${ic('p
  ${SH?`<div class=sheet onclick="SH=0;render()"><div onclick="event.stopPropagation()"><h3>What to review</h3>${[['all','Everything'],['chars','Kanji & alphabet'],['phr','Sentences & phrases']].map(([k,n])=>`<button class="btn opt${S.filter==k?' sel':''}" onclick="setF('${k}')">${n}</button>`).join('')}</div></div>`:''}`}
 function forecast(){const t=td(),c=Array(14).fill(0);Object.values(S.cards).forEach(s=>{if(!s.r)return;for(let k=0;k<14;k++)if(k?s.d==td(k):s.d<=t){c[k]++;break}});const mx=Math.max(...c,1);
  return `<div class=card2><b>Coming up</b> <small>${c.slice(1,8).reduce((a,b)=>a+b,0)} reviews in the next 7 days</small><div class=fcst>${c.map((v,k)=>`<div><span>${v||''}</span><i style="height:${v/mx*100}%;animation-delay:${k*30}ms"></i><small>${k?'SMTWTFS'[new Date(td(k)+'T00:00').getDay()]:'Now'}</small></div>`).join('')}</div></div>`}
+const lvl=()=>{const L=Math.floor(Math.sqrt(S.xp/25))+1,lo=25*(L-1)**2,hi=25*L*L;return `<div class=lvb><div class=lvt><b>Level ${L}</b><span>${ic('star')} ${S.xp-lo} / ${hi-lo} XP</span></div><div class=lvbar><div style="--w:${(S.xp-lo)/(hi-lo)*100}%"></div></div></div>`};
 function cal(){const o=[];for(let k=-34;k<=0;k++){const d=td(k),n=S.hist[d]||0;o.push(`<i class="d${n?n<S.goal/2?1:n<S.goal?2:3:0}" title="${d}: ${n}"></i>`)}return `<div class=cal>${o.join('')}</div>`}
 function theme(){document.documentElement.dataset.theme=S.theme=='dark'||(S.theme=='auto'&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light'}
 function startRev(){Q=dueIds();RT=Q.length;SX=0;PV=0;fresh=1;RV=1;flip=0;OPK='';vt(render)}
@@ -209,7 +213,7 @@ const addSheet=()=>`<div class=sheet onclick="closeAdd()"><div onclick="event.st
 function ftChg(){const w=$('#ft').value=='word';$('#rdw').hidden=!w;$('#nt').hidden=!w;$('#sth').hidden=w;$('#tx').placeholder=w?'日本語 (kanji is fine)':'日本語 sentence, e.g. わたしは 学校に 行きます'}
 function closeAdd(){if(['tx','rd','mn','sh','ur','nt'].some(i=>$('#'+i)?.value.trim())&&!confirm('Discard this card?'))return;AD=0;render()}
 function addC(i){let c;
- if(i!==undefined){const w=WORDS[i];if(S.custom.some(x=>x.t==w[0]))return toast('Already in your deck');c={t:w[0],m:w[2],s:'Word of the day'}}
+ if(i!==undefined){const w=WORDS[i];const ex=S.custom.find(x=>x.t==w[0]);if(ex){delete S.cards['c:'+ex.id];S.custom=S.custom.filter(y=>y!=ex);save();toast('Removed from deck');return render()}c={t:w[0],m:w[2],s:'Word of the day'}}
  else{const kind=$('#ft').value,raw=$('#tx').value.trim(),m=$('#mn').value.trim();if(!raw||!m)return toast('Enter Japanese and a translation');
   const u=$('#ur').value.trim();if(u&&!/^https?:\/\//i.test(u))return toast('Link must start with http:// or https://');
   const parts=raw.split(/[\s\/／]+/).filter(Boolean),t=kind=='sent'?parts.join(''):raw;c={t,m,s:$('#sh').value.trim(),u};if(kind=='sent'&&parts.length>1)c.p=parts;
@@ -271,8 +275,9 @@ function bView(){const q=SB.q[SB.i],d=SB.res,fix=q.p.join('');
  <div class=bb>${SB.bank.map(({t,k})=>SB.ans.includes(k)?`<span class="chip ghost">${esc(t)}</span>`:chipH(t,d?'':`bPut(${k})`,SB.mv===k&&SB.mvIn=='b'?'new':'')).join('')}</div>
  ${d?`<div class="bres ${d.ok?'good':'bad'}"><div class=vrow><b>${d.ok?(d.alt?'Correct! Another natural order':'Correct!'):'Not quite'}</b>${vb(fix)}</div>${!d.ok||d.alt?`<div class=ans>${d.ok?'Most natural':'Answer'}: <span class=jp>${fp(q.p.join(' '))}</span></div>`:''}</div><button class=btn onclick="bNext()">Continue</button>`
  :`<button class=btn ${SB.ans.length?'':'disabled'} onclick="bCheck()">Check</button>`}`}
-function bPut(k){if(SB.res)return;SB.ans.push(k);SB.mv=k;SB.mvIn='a';rB()}
-function bTake(n){if(SB.res)return;SB.mv=SB.ans[n];SB.mvIn='b';SB.ans.splice(n,1);rB()}
+const bSay=k=>{const b=SB.bank.find(x=>x.k==k);if(b)say(b.t)};
+function bPut(k){if(SB.res)return;bSay(k);SB.ans.push(k);SB.mv=k;SB.mvIn='a';rB()}
+function bTake(n){if(SB.res)return;bSay(SB.ans[n]);SB.mv=SB.ans[n];SB.mvIn='b';SB.ans.splice(n,1);rB()}
 function bCheck(){const q=SB.q[SB.i],g=SB.ans.map(k=>q.p[k]),c=q.p,ex=g.join('|')==c.join('|'),
  alt=!ex&&q.f&&g.length==c.length&&g[g.length-1]==c[c.length-1]&&[...g].sort().join('|')==[...c].sort().join('|'),ok=ex||alt;
  SB.res={ok,alt};SB.mv=null;if(ok)SB.sc++;SB.xp+=ok?10:2;S.xp+=ok?10:2;bump();save();hud();fb(ok);rB();say(c.join(''))}
@@ -280,6 +285,12 @@ function bNext(){SB.i++;if(SB.i<SB.q.length)nextB();vt(render);if(SB.i>=SB.q.len
 views.build=()=>{if(!SB){T='cards';return views.cards()}const n=SB.q.length;
  if(SB.i>=n)return `<div class=hero><div class=bounce>${ic('party')}</div>${SB.sc}/${n}<small> correct · +${SB.xp} XP</small></div><button class=btn onclick="startBuild()">Practice again</button><button class="btn alt" onclick="go('cards')">Done</button>`;
  return `<div class=rh><button class=ib onclick="go('cards')" aria-label="Exit">${SYS.dismiss}</button><div class=bar><div style="--f:${Math.max(0,(SB.i-1)/n*100)}%;--w:${SB.i/n*100}%"></div></div></div><div id=bd>${bView()}</div>`};
+const SM={goal:[5,5,20],newMax:[0,5,10],revMax:[10,10,100]};
+function stSet(k,v){const[m,,d]=SM[k],n=Math.round(+v);S[k]=v!==''&&isFinite(n)?Math.max(m,n):d;const e=$('#s_'+k);if(e)e.value=S[k];save()}
+const stp=(k,d)=>stSet(k,S[k]+d*SM[k][1]);
+function tgl(k,b){const v=k=='sfx'?S.sfx===false:!S.tts;S[k]=v;save();b.classList.toggle('off',!v);b.setAttribute('aria-pressed',v);if(v&&k=='sfx')SFX.ok()}
+function setTheme(v){const L=['auto','light','dark'],g=$('#thm'),n=L.indexOf(v);S.theme=v;save();theme();g.style.setProperty('--i',n);g.querySelectorAll('button').forEach((b,i)=>b.classList.toggle('on',i==n))}
+function setLv(v){S.lv=v;save();document.querySelectorAll('#lvs button').forEach(b=>b.classList.toggle('on',b.textContent==v))}
 function go(t){vt(()=>{T=t;KD=null;RV=0;ALL=0;SQ='';AD=0;CKE=null;SEL=null;DQ='';DL=60;document.body.classList.remove('sm');if(t!='build')SB=null;render()})}
 function render(){document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t==({test:'prof',build:'cards',deck:'cards'}[T]||T)));
  hud();M.innerHTML=views[T]();if(T=='alpha'&&!KD)selBar();$('#ty')?.focus();if(AD)$('#tx')?.focus();if(CKE!==null)$('#cw')?.focus();if(KD){initCv();setTimeout(play,250)}scrollTo(0,0)}
@@ -289,8 +300,7 @@ navigator.storage?.persist?.();
 if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js');
 
 theme();matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change',theme);
-document.querySelectorAll('nav i').forEach(e=>e.innerHTML=ic(e.dataset.i));
+document.querySelectorAll('nav i').forEach(e=>e.innerHTML=NAV[e.dataset.n]);$('.brand i').innerHTML=ic('flag');
 
-// Desktop: number keys 1-3 switch tabs; the shortcut hint is shown on the sidebar
-document.querySelectorAll('nav button').forEach((b,i)=>b.insertAdjacentHTML('beforeend',`<kbd>${i+1}</kbd>`));
+// Number keys 1-4 switch tabs
 addEventListener('keydown',e=>{if(e.ctrlKey||e.metaKey||e.altKey||RV||/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)||document.querySelector('.sheet'))return;const b=document.querySelectorAll('nav button')[+e.key-1];if(b)b.click()});

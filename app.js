@@ -25,8 +25,9 @@ const say=(t,el,force)=>{if(!(force||S.tts)||!window.speechSynthesis)return;cons
  if(el){el.classList.add('pl');const off=()=>{if(CU===u)el.classList.remove('pl')};u.onend=u.onerror=off;setTimeout(off,8000)}try{speechSynthesis.speak(u)}catch(e){el?.classList.remove('pl')}};
 // Duolingo-style speaker button: vb(text) = small, vb(text,'lg') = big with a slow-speed button underneath
 const SPK='<svg class="vi" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9.5v5h4l5 4.5V5L7 9.5z" fill="currentColor"/><path class="w1" d="M15.5 9a4 4 0 0 1 0 6"/><path class="w2" d="M18 6.5a8 8 0 0 1 0 11"/></svg>';
+const TUR='<svg class="vi tu" viewBox="0 -1 56.5 32" fill="currentColor" aria-hidden="true"><path d="M4 21C4 13 8 7.9 14.5 7.9C20.5 7.9 24.5 12.5 25 18.5Z"/><path d="M1.6 24.6L4 22.6L25 20.2L25 21.9L4 24.4Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><rect class="la" x="7" y="23" width="4.2" height="4.6" rx="1.6"/><rect class="lb" x="17.4" y="21.5" width="4.4" height="6.1" rx="1.6"/><path d="M25.8 19.4L29.8 15.2" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path fill-rule="evenodd" d="M26.8 14.4a3.8 3.8 0 1 0 7.6 0a3.8 3.8 0 1 0 -7.6 0Z"/><path class="w1" style="stroke-width:3.7" d="M38.4 7.6A7.1 7.1 0 0 1 38.4 21.4"/><path class="w2" style="stroke-width:3.7" d="M42.9 1.8A13.5 13.5 0 0 1 42.9 27.8"/></svg>';
 const sayEl=b=>say(b.dataset.t,b,1);
-const vb=(t,k='')=>window.speechSynthesis?`<span class="vg ${k=='lg'?'col':''}"><button class="vb ${k}" data-t="${esc(t)}" onclick="event.stopPropagation();sayEl(this)" aria-label="Play audio">${SPK}</button>${k=='lg'?`<button class="vb sm" data-t="${esc(t)}" data-r=".6" onclick="event.stopPropagation();sayEl(this)" aria-label="Play slowly">${SPK}<small>slow</small></button>`:''}</span>`:'';
+const vb=(t,k='')=>window.speechSynthesis?`<span class="vg ${k=='lg'?'col':''}"><button class="vb ${k}" data-t="${esc(t)}" onclick="event.stopPropagation();sayEl(this)" aria-label="Play audio">${SPK}</button>${k=='lg'?`<button class="vb lg" data-t="${esc(t)}" data-r=".6" onclick="event.stopPropagation();sayEl(this)" aria-label="Play slowly">${TUR}</button>`:''}</span>`:'';
 const hud=()=>{$('#hud').innerHTML=`<span class=hs>${ic('fire')}<b>${st()}</b></span><span class=hs><b class=xp>XP</b><b>${S.xp}</b></span>`};
 const shuf=a=>{const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[b[i],b[j]]=[b[j],b[i]]}return b};
 let SB=null,AD=0,SD=1;
@@ -74,8 +75,7 @@ const segH=(id,L,cur,fn,lbl)=>`<div class=seg id=${id} style="--n:${L.length};--
 const GROW=[[0,5],[5,10],[10,15],[15,20],[20,25],[25,30],[30,35],[35,38],[38,43],[43,46],[46,51],[51,56],[56,61],[61,66],[66,71]];
 const tileH=(id,c,r,n,col)=>`<div class="tile${S.cards[id]?' in':''}${SEL&&SEL.has(id)?' sel':''}${[...c].length>2?' w':''}" data-id="${id}" style="--k:${Math.min(n,24)}${col?`;grid-column:${col}`:''}" onclick="tapT(this,'${id}')"><b>${esc(c)}</b><small>${esc(r)}</small></div>`;
 function gridH(){
- if(A=='x')return `<button class="btn alt" onclick="CKE='';render()">+ New custom kanji</button>`+(S.ck.length?`<div class=grid>${S.ck.map((x,n)=>tileH('x:'+x.id,x.w,x.r,n)).join('')}</div>`:`<button class="btn dng" onclick="wipe()">Delete all data</button>
- <p class=cred>Kanji and kanji combinations that aren't in the built-in list live here. Add one, or tap an underlined kanji inside a sentence to give it a reading.</p>`);
+ if(A=='x')return `<button class="btn alt" onclick="CKE='';render()">+ New custom kanji</button>`+(S.ck.length?`<div class=grid>${S.ck.map((x,n)=>tileH('x:'+x.id,x.w,x.r,n)).join('')}</div>`:`<p class=cred>Kanji and kanji combinations that aren't in the built-in list live here. Add one, or tap an underlined kanji inside a sentence to give it a reading.</p>`);
  if(A=='j'){const l=jList();return `<div class=grid>${l.slice(0,JN).map(jTile).join('')}</div><div id=jm>${moreH(l.length)}</div>`}
  const L=A=='h'?H:K;
  return `<div class=kgrid>${GROW.map(([a,b])=>`${a==46?'<div class=gl>Dakuten ゛</div>':a==66?'<div class=gl>Handakuten ゜</div>':''}<div class=krow>${L.slice(a,b).map((c,j)=>tileH(A+':'+(a+j),c,R[a+j],a+j,b-a==3?[1,3,5][j]:0)).join('')}</div>`).join('')}</div>`}
@@ -124,7 +124,7 @@ prof(){const n=Object.keys(S.cards).length,m=Object.values(S.cards).filter(c=>(c
  <h3 class=sh>Your name</h3><input maxlength=24 placeholder="What should we call you?" value="${esc(S.name||'')}" onchange="S.name=this.value.trim();save()">
  <h3 class=sh>My level</h3><div class=lvs id=lvs>${['Pre-N5','N5','N4','N3','N2','N1'].map(l=>`<button class="${S.lv==l?'on':''}" onclick="setLv('${l}')">${l}</button>`).join('')}</div>
 
- <button class=btn onclick="startTest()">Fluency check (N5–N3)</button>
+ <button class=btn onclick="startTest()">Fluency check (N5–N1)</button>
  <button class="btn alt" onclick="chat()">Practice with ChatGPT</button>`},
 set(){const on=k=>k=='sfx'?S.sfx!==false:!!S.tts,TH=['auto','light','dark'],
  sp=(k,l)=>`<div class=st><span>${l}</span><div class=sp><button onclick="stp('${k}',-1)" aria-label="Decrease">−</button><input type=number id=s_${k} value=${S[k]} min=${SM[k][0]} onchange="stSet('${k}',this.value)"><button onclick="stp('${k}',1)" aria-label="Increase">+</button></div></div>`,
@@ -133,9 +133,10 @@ set(){const on=k=>k=='sfx'?S.sfx!==false:!!S.tts,TH=['auto','light','dark'],
  <h3 class=sh>Sound</h3><div class=tgs>${tg('tts','Read cards aloud',SPK)}${tg('sfx','Sound effects','<svg class=vi viewBox="0 0 24 24"><path d="M9 18V6l10-2v12" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6.5" cy="18" r="3" fill="currentColor" stroke="none"/><circle cx="16.5" cy="16" r="3" fill="currentColor" stroke="none"/></svg>')}</div>
  <h3 class=sh>Appearance</h3>${segH('thm',TH,S.theme,'setTheme',{auto:'Auto',light:'Light',dark:'Dark'})}
  <h3 class=sh>Backup</h3><div class=row2><button class="btn alt" onclick="exp()">Export backup</button><button class="btn alt" onclick="$('#im').click()">Import backup</button></div><input id=im type=file accept=.json hidden onchange="imp(this.files[0])">
+ <button class="btn dng" onclick="wipe()">Delete all data</button>
  <p class=cred>Stroke data: KanjiVG (CC BY-SA 3.0). Kanji: KANJIDIC (EDRDG, CC BY-SA 4.0). Word lists: JLPT lists by Jonathan Waller, via JMdict data.</p>`},
-test(){if(AS.i>=QC.length){let l='Pre-N5';for(const x of['N5','N4','N3']){if(AS.sc[x]>=3)l=x;else break}
- return `<div class=hero>${l}<small> estimated</small></div><p>N5 ${AS.sc.N5}/5 · N4 ${AS.sc.N4}/5 · N3 ${AS.sc.N3}/5</p><p>This is a rough estimate from a short quiz. It does not test listening or speaking.</p><button class=btn onclick="S.lv='${l}';save();go('prof')">Set as my level</button>`}
+test(){if(AS.i>=QC.length){let l='Pre-N5';for(const x of['N5','N4','N3','N2','N1']){if(AS.sc[x]>=3)l=x;else break}
+ return `<div class=hero>${l}<small> estimated</small></div><p>${['N5','N4','N3','N2','N1'].map(x=>`${x} ${AS.sc[x]}/5`).join(' · ')}</p><p>This is a rough estimate from a short quiz. It does not test listening or speaking.</p><button class=btn onclick="S.lv='${l}';save();go('prof')">Set as my level</button>`}
  const q=QC[AS.i];return `<small>${q[0]} · ${AS.i+1}/${QC.length}</small><div class=q>${q[1]}</div>${q[2].map((o,j)=>`<button class="btn opt" onclick="ans(${j},this)">${o}</button>`).join('')}`}};
 // ---- Custom kanji: kanji / combinations that are not in the built-in kanji list
 let CKE=null;
@@ -173,10 +174,13 @@ function confetti(){for(let i=0;i<40;i++){const e=document.createElement('i');e.
 function initCv(){const c=$('#cv');if(!c)return;const x=c.getContext('2d');x.lineWidth=10;x.lineCap=x.lineJoin='round';x.strokeStyle='#1CB0F6';let d=0;
  const p=e=>{const r=c.getBoundingClientRect();return[(e.clientX-r.left)*300/r.width,(e.clientY-r.top)*300/r.height]};
  c.onpointerdown=e=>{d=1;c.setPointerCapture(e.pointerId);x.beginPath();x.moveTo(...p(e))};c.onpointermove=e=>{if(d){x.lineTo(...p(e));x.stroke()}};c.onpointerup=()=>d=0}
+let WIMG='';
+function wReveal(){const c=$('#cv');WIMG=c?c.toDataURL():'';flip=1;say(card(Q[0]).say);render()}
+function wRestore(){const c=$('#cv');if(!WIMG||!c)return;const im=new Image();im.onload=()=>c.getContext('2d').drawImage(im,0,0);im.src=WIMG;WIMG=''}
 function clr(){const c=$('#cv');c.width=c.width;initCv()}
 // The app picks the exercise: new cards are flipped, young cards use choice, older cards add typing and listening
 function emode(id){const s=S.cards[id],i=s.i||0,r=Math.random(),k='hkjx'.includes(id[0]),sp=S.tts&&window.speechSynthesis;
- if(!s.r)return'flip';if(i<3)return'choice';
+ if(!s.r)return'flip';const kj=id[0]=='j'?id.slice(2):id[0]=='x'?(CKM(id.slice(2))||{}).w:'';if(kj&&[...kj].length==1&&STK[kj]&&r<(i<3?.25:.4))return'write';if(i<3)return'choice';
  if(i<10)return k&&r<.4?'type':sp&&r<.7?'listen':'choice';
  return k&&r<.5?'type':sp&&r<.8?'listen':'choice'}
 const KP=id=>{const k=KM[id.slice(2)];return k?KJ.filter(x=>x[5]==k[5]):KJ};
@@ -193,14 +197,15 @@ function setF(k){S.filter=k;SH=0;Q=dueIds();RT=Q.length;PV=0;OPK='';flip=0;fresh
 function review(){if(!Q.length)return `<div class=hero><div class=bounce>${ic('party')}</div><small>All done! +${SX} XP</small></div><button class=btn onclick="exitR()">Continue</button>`;
  const id=Q[0],c=card(id),cur=Math.max(0,(RT-Q.length)/RT*100),pv=PV,f=fresh;PV=cur;fresh=0;
  if(OPK!=id){OPK=id;AN=null;EM=emode(id);OPS=EM=='choice'?opts(id,c):EM=='listen'?opts(id,c,1):[];if(EM=='listen')setTimeout(()=>{const b=$('.vb.lg');b?say(c.say,b):say(c.say)},400)}
- const m=EM,shown=m=='flip'?flip:AN,sv=(m!='listen'||AN)&&(shown||!'hk'.includes(id[0]))?`<div style="margin-top:12px">${vb(c.say)}</div>`:'';
- const ctl=m=='flip'?(flip?`<div class=row2><button class="btn no" onclick="rate(0)">Again</button><button class=btn onclick="rate(1)">Good</button><button class="btn alt" onclick="rate(2)">Easy</button></div>`:'')
+ const m=EM,W=m=='write',shown=m=='flip'||W?flip:AN,sv=!(W&&!flip)&&(m!='listen'||AN)&&(shown||!'hk'.includes(id[0]))?`<div style="margin-top:12px">${vb(c.say)}</div>`:'';
+ const RB='<div class="row2"><button class="btn no" onclick="rate(0)">Again</button><button class="btn" onclick="rate(1)">Good</button><button class="btn alt" onclick="rate(2)">Easy</button></div>',ctl=W?(flip?RB:'<div class=row2><button class="btn alt" onclick="clr()">Clear</button><button class=btn onclick="wReveal()">Reveal</button></div>'):m=='flip'?(flip?`<div class=row2><button class="btn no" onclick="rate(0)">Again</button><button class=btn onclick="rate(1)">Good</button><button class="btn alt" onclick="rate(2)">Easy</button></div>`:'')
   :AN?`<button class=btn onclick="rate(${AN.ok?1:0},1)">Continue</button>`
   :m=='type'?`<input id=ty autocomplete=off autocapitalize=off placeholder="Type the romaji or meaning" onkeydown="if(event.key=='Enter')chk()"><button class=btn onclick="chk()">Check</button>`
   :OPS.map((o,j)=>`<button class="btn opt" onclick="pick(${j})">${esc(o)}</button>`).join('');
+ const kc=id[0]=='x'?(CKM(id.slice(2))||{}).w:id.slice(2),pad=W?`<div class=pad style="margin:14px auto"><svg class="guide${flip?'':' hide'}" viewBox="0 0 109 109">${(STK[kc]||[]).map(d=>`<path d="${d}"/>`).join('')}</svg><canvas id=cv width=300 height=300></canvas></div>`:'';
  const hint=m=='flip'?'Tap to reveal':m=='listen'?'Listen and choose':'';
  return `<div class=rh><button class=ib onclick="askQuit('r')" aria-label="Exit review">${SYS.dismiss}</button><div class=bar><div style="--f:${pv}%;--w:${cur}%"></div></div><button class=ib onclick="SH=1;render()" aria-label="Review settings">${SYS.settings}</button></div>
- <div class="fc ${f&&!document.startViewTransition?'in':''}" ${m=='flip'?`onclick="flip=1;say(card(Q[0]).say);render()"`:''} style="${c.sm?'font-size:28px':''}"><div>${m=='listen'&&!AN?vb(c.say,'lg'):c.f}</div>${sv}${shown?`<div class=back>${c.b}</div>`:hint?`<div class=back style="animation:none">${hint}</div>`:''}</div>${ctl}
+ <div class="fc ${f&&!document.startViewTransition?'in':''}" ${m=='flip'?`onclick="flip=1;say(card(Q[0]).say);render()"`:''} style="${c.sm?'font-size:28px':''}"><div>${W&&!flip?`<div style="font-size:20px;font-weight:800;line-height:1.5">Write this kanji<br><span style="font-size:18px;font-weight:700">${c.b}</span></div>`:m=='listen'&&!AN?vb(c.say,'lg'):c.f}</div>${sv}${shown?`<div class=back>${c.b}</div>`:hint?`<div class=back style="animation:none">${hint}</div>`:''}</div>${W?pad:''}${ctl}
  ${SH?`<div class=sheet onclick="SH=0;render()"><div onclick="event.stopPropagation()"><h3>What to review</h3>${[['all','Everything'],['chars','Kanji & alphabet'],['phr','Sentences & phrases']].map(([k,n])=>`<button class="btn opt${S.filter==k?' sel':''}" onclick="setF('${k}')">${n}</button>`).join('')}</div></div>`:''}`}
 function forecast(){const t=td(),c=Array(14).fill(0);Object.values(S.cards).forEach(s=>{if(!s.r)return;for(let k=0;k<14;k++)if(k?s.d==td(k):s.d<=t){c[k]++;break}});const mx=Math.max(...c,1);
  return `<div class=card2><b>Coming up</b> <small>${c.slice(1,8).reduce((a,b)=>a+b,0)} reviews in the next 7 days</small><div class=fcst>${c.map((v,k)=>`<div><span>${v||''}</span><i style="height:${v/mx*100}%;animation-delay:${k*30}ms"></i><small>${k?'SMTWTFS'[new Date(td(k)+'T00:00').getDay()]:'Now'}</small></div>`).join('')}</div></div>`}
@@ -232,8 +237,9 @@ function addC(i){let c;
 function addW(i,b){const w=S.words[i];if(!w)return;if(S.custom.some(c=>c.t==w.w))return toast('Already in your deck');
  const c={t:w.w,m:w.m||w.r,s:'Compound of '+KD,id:String(Date.now()+i)};S.custom.push(c);S.cards['c:'+c.id]={b:0,d:td()};save();b.disabled=true;b.textContent='In deck ✓';toast('Added to deck')}
 function chat(){const weak=Object.keys(S.cards).filter(k=>(S.cards[k].i||0)<4&&card(k)).slice(0,10).map(k=>card(k).say).join('、');
- const p=`You are my friendly Japanese tutor. My level is ${S.lv}. Chat with me in simple Japanese at my level, adding furigana for kanji and a short English hint. Correct my mistakes gently and ask one question at a time.${weak?` Try to use these words I am still learning: ${weak}.`:''} Start now.`;
- (navigator.clipboard?navigator.clipboard.writeText(p):Promise.reject()).then(()=>toast('Prompt copied. Paste it in ChatGPT'),()=>prompt('Copy this prompt:',p));window.open('https://chatgpt.com/','_blank')}
+ const lv=S.lv=='Pre-N5'?'Pre-N5 (complete beginner, before JLPT N5)':'JLPT '+S.lv,
+  p=`You are my friendly Japanese tutor. My level is ${lv}. Send me 10 practice questions at exactly this level, one at a time, and wait for my answer before the next one. Mix the question types: vocabulary meaning, kanji reading, fill in the blank grammar, particle choice, sentence ordering, and English to Japanese translation. Give multiple choice options where it makes sense. Add furigana to every kanji and a short English hint. After each answer, tell me if I was right, correct me gently and explain briefly. After question 10, give my score and the topics I should review.${weak?` Try to include these words I am still learning: ${weak}.`:''} Start with question 1.`;
+ (navigator.clipboard?navigator.clipboard.writeText(p):Promise.resolve()).catch(()=>{});window.open('https://chatgpt.com/?q='+encodeURIComponent(p),'_blank')}
 function exp(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S)],{type:'application/json'}));a.download='memojap-backup-'+td()+'.json';a.click()}
 function imp(f){if(!f)return;f.text().then(t=>{S=Object.assign(S,JSON.parse(t));FI=null;save();render();toast('Backup restored')}).catch(()=>toast('Invalid file'))}
 function ans(j,b){const ok=j==QC[AS.i][3];if(ok)AS.sc[QC[AS.i][0]]++;document.querySelectorAll('.opt').forEach(x=>x.disabled=1);b.classList.add(ok?'ok':'bad');fb(ok,ok?'Correct!':'Not quite');setTimeout(()=>{AS.i++;render()},800)}
@@ -244,10 +250,12 @@ const QS=[['N5','まいあさ ( ) を のみます。',['ごはん','みず','�
 QS.push(['N5','「みせ」の かんじは?',['店','庭','広','座'],0],['N5','わたしは ともだち ( ) えいがを みました。',['と','が','を','に'],0],['N5','この かばんは ( ) ですか。',['いくら','いつ','だれ','どこ'],0],['N5','「大きい」の はんたいは?',['小さい','長い','高い','安い'],0],['N5','きのう 7じに ( )。',['おきました','おきます','おきて','おきない'],0],
 ['N4','電車が おくれた ( )、会社に ちこくしました。',['ので','のに','ながら','ように'],0],['N4','子どもの とき、よく 川で ( ) ものです。',['およいだ','およぐ','およいで','およげ'],0],['N4','「約束」の よみかたは?',['やくそく','やくぞく','やっそく','よくそく'],0],['N4','この 薬は 食事の ( ) 飲んでください。',['あとで','あとに','うしろで','つぎで'],0],['N4','お客さまが ( )。',['いらっしゃいました','まいりました','もうしました','いただきました'],0],
 ['N3','雨が 降りそうだ ( )、傘を 持って いこう。',['から','のに','けれど','ても'],0],['N3','「環境」の よみかたは?',['かんきょう','かんぎょう','かんけい','かんきょ'],0],['N3','彼女は 毎日 練習した ( ) 、上手に なった。',['かいがあって','せいで','くせに','わりに'],0],['N3','試験に 合格できる( )、毎日 勉強しています。',['ように','ために','ばかり','ほど'],0],['N3','「増える」の はんたいは?',['減る','上がる','落ちる','消える'],0]);
-function startTest(){QC=[];for(const L of['N5','N4','N3'])QS.filter(q=>q[0]==L).sort(()=>Math.random()-.5).slice(0,5).forEach(q=>{const o=q[2].map((t,i)=>[t,i==q[3]]).sort(()=>Math.random()-.5);QC.push([L,q[1],o.map(x=>x[0]),o.findIndex(x=>x[1])])});AS={i:0,sc:{N5:0,N4:0,N3:0}};go('test')}
+QS.push(['N2','「頻繁」の よみかたは?',['ひんぱん','ひんぱ','ひんはん','びんぱん'],0],['N2','「妥協」の よみかたは?',['だきょう','たきょう','だこう','だけい'],0],['N2','彼は新人( )、仕事が早い。',['にしては','にとって','に関して','として'],0],['N2','天気予報( )、明日は雪が降るそうだ。',['によると','にとって','について','に対して'],0],['N2','彼は医者である( )、作家でもある。',['と同時に','に対して','にしては','わりに'],0],['N2','「増加」の はんたいは?',['減少','上昇','拡大','成長'],0],
+['N1','「懸念」の よみかたは?',['けねん','けんねん','かんねん','けいねん'],0],['N1','「遂行」の よみかたは?',['すいこう','ついこう','すいぎょう','つうこう'],0],['N1','お客様のご要望( )、サービスを改善いたします。',['を踏まえて','をよそに','ならでは','ともなると'],0],['N1','周囲の反対( )、彼は留学を決意した。',['をよそに','をもとに','にかかわらず','に先立って'],0],['N1','社長( )人が、そんな不正をするはずがない。',['ともあろう','ばかりの','からする','といえども'],0],['N1','「脆い」の よみかたは?',['もろい','ひどい','にぶい','するどい'],0]);
+function startTest(){QC=[];for(const L of['N5','N4','N3','N2','N1'])QS.filter(q=>q[0]==L).sort(()=>Math.random()-.5).slice(0,5).forEach(q=>{const o=q[2].map((t,i)=>[t,i==q[3]]).sort(()=>Math.random()-.5);QC.push([L,q[1],o.map(x=>x[0]),o.findIndex(x=>x[1])])});AS={i:0,sc:{N5:0,N4:0,N3:0,N2:0,N1:0}};go('test')}
 // ---- Deck manager: see every card, filter/search, remove (with undo)
 const DK=()=>Object.keys(S.cards).filter(k=>card(k));
-const DFL=[['all','All'],['h','Hiragana'],['k','Katakana'],['j','Kanji'],['x','Custom kanji'],['c','Words']];
+const DFL=[['all','All'],['h','Hiragana'],['k','Katakana'],['j','Kanji'],['c','Words'],['x','Custom kanji']];
 const dstat=x=>!x.r?'New':x.d<=td()?'Due':(x.i||0)>=21?'Mastered':'Learning';
 function deckIds(){const q=DQ.trim().toLowerCase();return DK().filter(id=>{if(DF!='all'&&id[0]!=DF)return false;if(!q)return true;const c=card(id);
  return[c.say,c.w||'',c.a,String(c.b).replace(/<[^>]+>/g,' '),id[0]=='c'?furi(c.say).replace(/<[^>]+>/g,''):''].some(x=>String(x).toLowerCase().includes(q))})}
@@ -304,7 +312,7 @@ let LVA=1;
 async function wipe(){if(!confirm('Delete ALL your data? Cards, progress, XP and settings will be erased. This cannot be undone.'))return;const d=await idb,tx=d.transaction('s','readwrite');tx.objectStore('s').clear();tx.oncomplete=()=>location.reload()}
 function go(t){LVA=1;vt(()=>{T=t;KD=null;RV=0;ALL=0;SQ='';AD=0;CKE=null;SEL=null;DQ='';DL=60;document.body.classList.remove('sm');if(t!='build')SB=null;render()})}
 function render(){document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t==({test:'prof',build:'cards',deck:'cards'}[T]||T)));
- hud();M.innerHTML=views[T]();if(T=='alpha'&&!KD)selBar();$('#ty')?.focus();if(AD)$('#tx')?.focus();if(CKE!==null)$('#cw')?.focus();if(KD){initCv();setTimeout(play,250)}scrollTo(0,0)}
+ hud();M.innerHTML=views[T]();if(T=='alpha'&&!KD)selBar();$('#ty')?.focus();if(AD)$('#tx')?.focus();if(CKE!==null)$('#cw')?.focus();if(KD){initCv();setTimeout(play,250)}else if(RV&&EM=='write'){initCv();wRestore()}scrollTo(0,0)}
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>go(b.dataset.t));
 load().then(d=>{if(d)S=Object.assign(S,d);S.words.forEach(fixW);const h=new Set(S.words.map(x=>x.w+x.r));SEED.forEach(x=>h.has(x.w+x.r)||S.words.push(x));FI=null;mig();migCk();theme();render()});
 navigator.storage?.persist?.();

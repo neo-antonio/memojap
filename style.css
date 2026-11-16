@@ -59,6 +59,9 @@ input,textarea,select{color:var(--t)}
 .vb:active{transform:translateY(3px);border-bottom-width:2px}.vb .vi{width:1em;height:1em}.vi .w1,.vi .w2{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
 .vb.lg{width:112px;height:112px;border-radius:32px;font-size:64px;border-bottom-width:7px}
 .vb.sm{width:auto;height:36px;padding:0 12px;border-radius:12px;font-size:18px;border-bottom-width:4px}.vb.sm small{font-size:12px;font-weight:800}
+/* turtle: little walking steps while the slow audio plays */
+.vb .vi.tu{width:1.28em;height:.725em}
+.vb.pl .la{animation:tstep .8s infinite}.vb.pl .lb{animation:tstep .8s .4s infinite}@keyframes tstep{50%{transform:translateY(-1px)}}
 .vb.pl{background:var(--b);color:#fff}.vb.pl .w1{animation:wave .9s infinite}.vb.pl .w2{animation:wave .9s .3s infinite}@keyframes wave{50%{opacity:.2}}
 .wd{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .crow{display:flex;gap:10px;align-items:center}.crow>div:first-child{flex:1;min-width:0}.ca{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
@@ -141,3 +144,5 @@ nav i{transition:transform .45s cubic-bezier(.25,.8,.35,1)}nav button.on i{trans
 .fl{flex-wrap:wrap;overflow:visible;margin:0;padding:4px 0 10px}
 /* furigana: more clearance above kanji, never clipped or covered */
 .chip{overflow:visible}.chip rt{top:-.9em;z-index:2;font-size:.46em;font-weight:700}.bz,.bb{padding-top:14px}
+.vg.col{flex-direction:row;gap:14px}.vg.col .vb{background:var(--b);color:#fff;border-color:var(--bd)}
+.chip{height:62px}.guide.hide{opacity:0}.guide{transition:opacity .3s}

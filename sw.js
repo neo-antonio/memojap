@@ -1,4 +1,4 @@
-const C='memojap-v13',F=['./','index.html','style.css','app.js','data.js','icons.js','strokes.js','sentences.js','manifest.webmanifest','icon.svg'],OPT=['sad.png'];
+const C='memojap-v14',F=['./','index.html','style.css','app.js','data.js','icons.js','strokes.js','sentences.js','manifest.webmanifest','icon.svg'],OPT=['sad.png'];
 // cache:'reload' skips the browser HTTP cache, so a new version never precaches stale copies of old files
 const fresh=u=>new Request(u,{cache:'reload'});
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(C).then(c=>Promise.all(F.map(u=>c.add(fresh(u)))).then(()=>Promise.all(OPT.map(u=>c.add(fresh(u)).catch(()=>{}))))))});

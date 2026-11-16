@@ -27,7 +27,7 @@ const say=(t,el,force)=>{if(!(force||S.tts)||!window.speechSynthesis)return;cons
 const SPK='<svg class="vi" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9.5v5h4l5 4.5V5L7 9.5z" fill="currentColor"/><path class="w1" d="M15.5 9a4 4 0 0 1 0 6"/><path class="w2" d="M18 6.5a8 8 0 0 1 0 11"/></svg>';
 const sayEl=b=>say(b.dataset.t,b,1);
 const vb=(t,k='')=>window.speechSynthesis?`<span class="vg ${k=='lg'?'col':''}"><button class="vb ${k}" data-t="${esc(t)}" onclick="event.stopPropagation();sayEl(this)" aria-label="Play audio">${SPK}</button>${k=='lg'?`<button class="vb sm" data-t="${esc(t)}" data-r=".6" onclick="event.stopPropagation();sayEl(this)" aria-label="Play slowly">${SPK}<small>slow</small></button>`:''}</span>`:'';
-const hud=()=>{$('#hud').innerHTML=`<span class=hs>${ic('fire')}<b>${st()}</b></span><span class=hs>${ic('star')}<b>${S.xp}</b></span>`};
+const hud=()=>{$('#hud').innerHTML=`<span class=hs>${ic('fire')}<b>${st()}</b></span><span class=hs><b class=xp>XP</b><b>${S.xp}</b></span>`};
 const shuf=a=>{const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[b[i],b[j]]=[b[j],b[i]]}return b};
 let SB=null,AD=0,SD=1;
 const isK=c=>/[\u4e00-\u9fff]/.test(c);
@@ -61,8 +61,11 @@ function dueIds(){const t=td(),nn=S.nd==t?S.nn:0,ok=k=>card(k)&&inF(k),K=Object.
  const rv=K.filter(k=>S.cards[k].r&&S.cards[k].d<=t&&ok(k)).sort((a,b)=>S.cards[a].d<S.cards[b].d?-1:1).slice(0,S.revMax);
  return[...rv,...K.filter(k=>!S.cards[k].r&&ok(k)).slice(0,Math.max(0,S.newMax-nn))]}
 function mig(){Object.values(S.cards).forEach(c=>{if(c.r===undefined)c.r=c.b>0?1:0;if(!c.i)c.i=INT[c.b||0];if(!c.e)c.e=2.5})}
-function bump(){if(S.day!=td()){S.day=td();S.today=0}if(S.last!=td()){S.streak=S.last==td(-1)?S.streak+1:1;S.last=td()}S.today++;S.hist[td()]=(S.hist[td()]||0)+1}
+function bump(){if(S.day!=td()){S.day=td();S.today=0}if(S.last!=td()){if(S.last&&S.last!=td(-1)&&S.streak>0)S.lost={n:S.streak,d:td()};S.streak=S.last==td(-1)?S.streak+1:1;S.last=td()}S.today++;S.hist[td()]=(S.hist[td()]||0)+1}
 const st=()=>S.last==td()||S.last==td(-1)?S.streak:0;
+// Avatar mood: amazed on milestones (30, 50, 100, 150, ... every 50, plus every 365), sad if a streak of 7+ days was lost, angry if a shorter one was, otherwise happy
+function mood(){const c=st(),M=n=>n==30||(n>=50&&n%50==0)||(n>=365&&n%365==0);let l=0;if(!c&&S.streak>0&&S.last)l=S.streak;else if(S.lost&&S.lost.d==td())l=S.lost.n;
+ if(c&&M(c))return['amazed',`${c} day streak! Amazing!`];if(l)return l>=7?['sad',`I miss your ${l} day streak...`]:['angry',`You lost your ${l} day streak!`];return['happy',c?'Keep it going!':'Ready to learn?']}
 function addSet(){const ids=A=='h'?H.map((_,i)=>'h:'+i):A=='k'?K.map((_,i)=>'k:'+i):A=='x'?S.ck.map(x=>'x:'+x.id):KJ.filter(k=>k[5]==KL).map(k=>'j:'+k[0]);if(!ids.length)return toast('Add a custom kanji first');let n=0;
  ids.forEach(id=>{if(!S.cards[id]){S.cards[id]={b:0,d:td()};n++}});save();markIn();toast(n?n+' cards added to deck':'Already all in your deck')}
 const ORD=['h','k','j','x'],LV=['N5','N4','N3','N2','N1'],AL={h:'Hiragana',k:'Katakana',j:'Kanji',x:'Custom'};
@@ -71,7 +74,8 @@ const segH=(id,L,cur,fn,lbl)=>`<div class=seg id=${id} style="--n:${L.length};--
 const GROW=[[0,5],[5,10],[10,15],[15,20],[20,25],[25,30],[30,35],[35,38],[38,43],[43,46],[46,51],[51,56],[56,61],[61,66],[66,71]];
 const tileH=(id,c,r,n,col)=>`<div class="tile${S.cards[id]?' in':''}${SEL&&SEL.has(id)?' sel':''}${[...c].length>2?' w':''}" data-id="${id}" style="--k:${Math.min(n,24)}${col?`;grid-column:${col}`:''}" onclick="tapT(this,'${id}')"><b>${esc(c)}</b><small>${esc(r)}</small></div>`;
 function gridH(){
- if(A=='x')return `<button class="btn alt" onclick="CKE='';render()">+ New custom kanji</button>`+(S.ck.length?`<div class=grid>${S.ck.map((x,n)=>tileH('x:'+x.id,x.w,x.r,n)).join('')}</div>`:`<p class=cred>Kanji and kanji combinations that aren't in the built-in list live here. Add one, or tap an underlined kanji inside a sentence to give it a reading.</p>`);
+ if(A=='x')return `<button class="btn alt" onclick="CKE='';render()">+ New custom kanji</button>`+(S.ck.length?`<div class=grid>${S.ck.map((x,n)=>tileH('x:'+x.id,x.w,x.r,n)).join('')}</div>`:`<button class="btn dng" onclick="wipe()">Delete all data</button>
+ <p class=cred>Kanji and kanji combinations that aren't in the built-in list live here. Add one, or tap an underlined kanji inside a sentence to give it a reading.</p>`);
  if(A=='j'){const l=jList();return `<div class=grid>${l.slice(0,JN).map(jTile).join('')}</div><div id=jm>${moreH(l.length)}</div>`}
  const L=A=='h'?H:K;
  return `<div class=kgrid>${GROW.map(([a,b])=>`${a==46?'<div class=gl>Dakuten ゛</div>':a==66?'<div class=gl>Handakuten ゜</div>':''}<div class=krow>${L.slice(a,b).map((c,j)=>tileH(A+':'+(a+j),c,R[a+j],a+j,b-a==3?[1,3,5][j]:0)).join('')}</div>`).join('')}</div>`}
@@ -114,8 +118,9 @@ cards(){if(RV)return review();const due=dueIds(),i=Math.floor(Date.now()/864e5)%
  ${forecast()}
  ${AD?addSheet():''}`},
 prof(){const n=Object.keys(S.cards).length,m=Object.values(S.cards).filter(c=>(c.i||0)>=21).length;
- return `<div class=hero>${ic('fire')} ${st()}<small> day streak</small></div><p><b>Today:</b> ${S.day==td()?S.today:0}/${S.goal} reviews</p><div class=bar><div style="width:${Math.min(100,(S.day==td()?S.today:0)/S.goal*100)}%"></div></div>
- <p>${ic('star')} ${S.xp} XP · ${ic('cards')} ${n} cards · ${ic('medal')} ${m} mastered</p><h3>Last 5 weeks</h3>${cal()}
+ const[mo,mt]=mood();
+ return `<div class=av><img src="img/${mo}.png" alt="" class="${mo=='amazed'?'bounce':''}"><div class=avt>${mt}</div></div><div class=hero>${ic('fire')} ${st()}<small> day streak</small></div><p><b>Today:</b> ${S.day==td()?S.today:0}/${S.goal} reviews</p><div class=bar><div style="width:${Math.min(100,(S.day==td()?S.today:0)/S.goal*100)}%"></div></div>
+ <p>${S.xp} <b class=xp>XP</b> · ${ic('cards')} ${n} cards · ${ic('medal')} ${m} mastered</p><h3>Last 5 weeks</h3>${cal()}
  <h3 class=sh>Your name</h3><input maxlength=24 placeholder="What should we call you?" value="${esc(S.name||'')}" onchange="S.name=this.value.trim();save()">
  <h3 class=sh>My level</h3><div class=lvs id=lvs>${['Pre-N5','N5','N4','N3','N2','N1'].map(l=>`<button class="${S.lv==l?'on':''}" onclick="setLv('${l}')">${l}</button>`).join('')}</div>
 
@@ -195,7 +200,7 @@ function review(){if(!Q.length)return `<div class=hero><div class=bounce>${ic('p
  ${SH?`<div class=sheet onclick="SH=0;render()"><div onclick="event.stopPropagation()"><h3>What to review</h3>${[['all','Everything'],['chars','Kanji & alphabet'],['phr','Sentences & phrases']].map(([k,n])=>`<button class="btn opt${S.filter==k?' sel':''}" onclick="setF('${k}')">${n}</button>`).join('')}</div></div>`:''}`}
 function forecast(){const t=td(),c=Array(14).fill(0);Object.values(S.cards).forEach(s=>{if(!s.r)return;for(let k=0;k<14;k++)if(k?s.d==td(k):s.d<=t){c[k]++;break}});const mx=Math.max(...c,1);
  return `<div class=card2><b>Coming up</b> <small>${c.slice(1,8).reduce((a,b)=>a+b,0)} reviews in the next 7 days</small><div class=fcst>${c.map((v,k)=>`<div><span>${v||''}</span><i style="height:${v/mx*100}%;animation-delay:${k*30}ms"></i><small>${k?'SMTWTFS'[new Date(td(k)+'T00:00').getDay()]:'Now'}</small></div>`).join('')}</div></div>`}
-const lvl=()=>{const L=Math.floor(Math.sqrt(S.xp/25))+1,lo=25*(L-1)**2,hi=25*L*L;return `<div class=lvb><div class=lvt><b>Level ${L}</b><span>${ic('star')} ${S.xp-lo} / ${hi-lo} XP</span></div><div class=lvbar><div style="--w:${(S.xp-lo)/(hi-lo)*100}%"></div></div></div>`};
+const lvl=()=>{const L=Math.floor(Math.sqrt(S.xp/25))+1,lo=25*(L-1)**2,hi=25*L*L,an=LVA;LVA=0;return `<div class=lvb><div class=lvt><b>Level ${L}</b><span>${S.xp-lo} / ${hi-lo} <b class=xp>XP</b></span></div><div class=lvbar><div class="${an?'':'na'}" style="--w:${(S.xp-lo)/(hi-lo)*100}%"></div></div></div>`};
 function cal(){const o=[];for(let k=-34;k<=0;k++){const d=td(k),n=S.hist[d]||0;o.push(`<i class="d${n?n<S.goal/2?1:n<S.goal?2:3:0}" title="${d}: ${n}"></i>`)}return `<div class=cal>${o.join('')}</div>`}
 function theme(){document.documentElement.dataset.theme=S.theme=='dark'||(S.theme=='auto'&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light'}
 function startRev(){Q=dueIds();RT=Q.length;SX=0;PV=0;fresh=1;RV=1;flip=0;OPK='';vt(render)}
@@ -291,7 +296,9 @@ const stp=(k,d)=>stSet(k,S[k]+d*SM[k][1]);
 function tgl(k,b){const v=k=='sfx'?S.sfx===false:!S.tts;S[k]=v;save();b.classList.toggle('off',!v);b.setAttribute('aria-pressed',v);if(v&&k=='sfx')SFX.ok()}
 function setTheme(v){const L=['auto','light','dark'],g=$('#thm'),n=L.indexOf(v);S.theme=v;save();theme();g.style.setProperty('--i',n);g.querySelectorAll('button').forEach((b,i)=>b.classList.toggle('on',i==n))}
 function setLv(v){S.lv=v;save();document.querySelectorAll('#lvs button').forEach(b=>b.classList.toggle('on',b.textContent==v))}
-function go(t){vt(()=>{T=t;KD=null;RV=0;ALL=0;SQ='';AD=0;CKE=null;SEL=null;DQ='';DL=60;document.body.classList.remove('sm');if(t!='build')SB=null;render()})}
+let LVA=1;
+async function wipe(){if(!confirm('Delete ALL your data? Cards, progress, XP and settings will be erased. This cannot be undone.'))return;const d=await idb,tx=d.transaction('s','readwrite');tx.objectStore('s').clear();tx.oncomplete=()=>location.reload()}
+function go(t){LVA=1;vt(()=>{T=t;KD=null;RV=0;ALL=0;SQ='';AD=0;CKE=null;SEL=null;DQ='';DL=60;document.body.classList.remove('sm');if(t!='build')SB=null;render()})}
 function render(){document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t==({test:'prof',build:'cards',deck:'cards'}[T]||T)));
  hud();M.innerHTML=views[T]();if(T=='alpha'&&!KD)selBar();$('#ty')?.focus();if(AD)$('#tx')?.focus();if(CKE!==null)$('#cw')?.focus();if(KD){initCv();setTimeout(play,250)}scrollTo(0,0)}
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>go(b.dataset.t));

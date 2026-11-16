@@ -133,3 +133,6 @@ nav button{transition:background .25s,border-color .25s,transform .12s var(--e)}
 /* compound / word rows: let the buttons wrap instead of being cut off */
 .crow{flex-wrap:wrap}.crow>div:first-child{flex:1 1 150px}.ca{flex:0 0 auto;margin-left:auto}.crow .btn{flex:none}
 nav i{transition:transform .45s cubic-bezier(.25,.8,.35,1)}nav button.on i{transform:scale(1.1)}nav button:active i{transform:scale(1.16);transition-duration:.25s}nav button{transition:background .35s,border-color .35s,transform .25s cubic-bezier(.25,.8,.35,1)}
+.xp{color:var(--b)!important;-webkit-text-stroke:4px #fff;paint-order:stroke fill;font-weight:900;letter-spacing:.5px}.lvbar div.na{animation:none}
+.btn.dng{background:#FF4B4B;color:#fff;border-color:#EA2B2B;box-shadow:0 4px 0 #EA2B2B;margin-top:14px}.btn.dng:active{box-shadow:none}
+.av{display:flex;flex-direction:column;align-items:center;gap:8px;margin:4px 0 10px}.av img{height:170px;width:auto;max-width:100%;object-fit:contain}.avt{font-weight:800;color:var(--s);text-align:center}

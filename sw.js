@@ -1,12 +1,6 @@
-const C='memojap-v14',F=['./','index.html','style.css','app.js','data.js','icons.js','strokes.js','sentences.js','manifest.webmanifest','icon.svg'],OPT=['sad.png'];
-// cache:'reload' skips the browser HTTP cache, so a new version never precaches stale copies of old files
-const fresh=u=>new Request(u,{cache:'reload'});
-self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(C).then(c=>Promise.all(F.map(u=>c.add(fresh(u)))).then(()=>Promise.all(OPT.map(u=>c.add(fresh(u)).catch(()=>{}))))))});
-self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!=C).map(x=>caches.delete(x)))).then(()=>self.clients.claim())));
-self.addEventListener('fetch',e=>{const r=e.request;if(r.method!=='GET')return;const u=new URL(r.url);
-if(/^fonts\.g(oogleapis|static)\.com$/.test(u.hostname)){e.respondWith(caches.open(C).then(c=>c.match(r).then(m=>m||fetch(r).then(n=>{c.put(r,n.clone());return n}).catch(()=>Response.error()))));return}
-if(u.origin!==location.origin)return;
-// page loads: the precached index.html (refreshed on every version bump)
-if(r.mode==='navigate'){e.respondWith(caches.match('index.html').then(m=>m||fetch(r)));return}
-// everything else: network first (always the latest when online), cache as the offline fallback
-e.respondWith(fetch(r,{cache:'no-cache'}).then(n=>{if(n.ok&&n.type==='basic'){const cp=n.clone();caches.open(C).then(c=>c.put(r,cp))}return n}).catch(()=>caches.match(r,{ignoreSearch:true})))});
+// MemoJap service worker: network-first, so a new version shows up on the next load (cache is only the offline fallback).
+const V='memojap-v3',FILES=['./','index.html','style.css','app.js','icons.js','data.js','strokes.js','sentences.js','manifest.webmanifest','icon.svg','img/happy.png','img/sad.png','img/angry.png','img/amazed.png'];
+self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(V).then(c=>Promise.all(FILES.map(f=>c.add(new Request(f,{cache:'reload'})).catch(()=>{})))))});
+self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==V).map(x=>caches.delete(x)))).then(()=>self.clients.claim())));
+self.addEventListener('fetch',e=>{const r=e.request;if(r.method!=='GET'||new URL(r.url).origin!==location.origin)return;
+ e.respondWith(fetch(r,{cache:'no-cache'}).then(res=>{if(res.ok){const cp=res.clone();caches.open(V).then(c=>c.put(r,cp))}return res}).catch(()=>caches.match(r).then(m=>m||(r.mode==='navigate'?caches.match('index.html'):Response.error()))))});

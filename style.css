@@ -136,3 +136,8 @@ nav i{transition:transform .45s cubic-bezier(.25,.8,.35,1)}nav button.on i{trans
 .xp{color:var(--b)!important;-webkit-text-stroke:4px #fff;paint-order:stroke fill;font-weight:900;letter-spacing:.5px}.lvbar div.na{animation:none}
 .btn.dng{background:#FF4B4B;color:#fff;border-color:#EA2B2B;box-shadow:0 4px 0 #EA2B2B;margin-top:14px}.btn.dng:active{box-shadow:none}
 .av{display:flex;flex-direction:column;align-items:center;gap:8px;margin:4px 0 10px}.av img{height:170px;width:auto;max-width:100%;object-fit:contain}.avt{font-weight:800;color:var(--s);text-align:center}
+.qq{text-align:center}.qq img{height:130px;width:auto;margin:0 auto 6px;display:block}.qq h3{margin:4px 0 6px;font-size:22px}.qq p{margin:0 0 16px;color:var(--s);font-weight:700}.qq .btn{margin-top:10px}
+/* deck type filters: show all at once */
+.fl{flex-wrap:wrap;overflow:visible;margin:0;padding:4px 0 10px}
+/* furigana: more clearance above kanji, never clipped or covered */
+.chip{overflow:visible}.chip rt{top:-.9em;z-index:2;font-size:.46em;font-weight:700}.bz,.bb{padding-top:14px}

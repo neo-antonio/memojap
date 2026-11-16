@@ -184,6 +184,10 @@ function opts(id,c,L){const t=id[0],ans=L?c.say:c.a,pool=L?(t=='h'?H:t=='k'?K:t=
  while(o.size<4&&n++<300){const x=pool[Math.random()*pool.length|0];if(x&&x!=ans)o.add(x)}return[...o].sort(()=>Math.random()-.5)}
 function pick(j){const c=card(Q[0]);AN={ok:OPS[j]==(EM=='listen'?c.say:c.a)};fb(AN.ok);say(c.say);render()}
 function chk(){const v=$('#ty').value.trim().toLowerCase(),c=card(Q[0]);AN={ok:!!v&&c.acc.includes(v)};fb(AN.ok);say(c.say);render()}
+let SNAP=null;
+function askQuit(m){if($('#qm'))return;const d=document.createElement('div');d.id='qm';d.className='sheet';d.onclick=e=>{if(e.target==d)closeQ()};d.innerHTML=`<div class=qq><img src="img/sad.png" alt=""><h3>Are you sure you want to quit?</h3><p>You will lose all XP earned and this session will not count towards your streak.</p><button class=btn onclick="closeQ()">Continue</button><button class="btn dng" onclick="doQuit('${m}')">Quit</button></div>`;document.body.appendChild(d)}
+const closeQ=()=>{const d=$('#qm');if(d)d.remove()};
+function doQuit(m){closeQ();if(SNAP){S=SNAP;SNAP=null;save();hud()}m=='r'?exitR():go('cards')}
 function exitR(){RV=0;SH=0;vt(render)}
 function setF(k){S.filter=k;SH=0;Q=dueIds();RT=Q.length;PV=0;OPK='';flip=0;fresh=1;save();vt(render)}
 function review(){if(!Q.length)return `<div class=hero><div class=bounce>${ic('party')}</div><small>All done! +${SX} XP</small></div><button class=btn onclick="exitR()">Continue</button>`;
@@ -195,7 +199,7 @@ function review(){if(!Q.length)return `<div class=hero><div class=bounce>${ic('p
   :m=='type'?`<input id=ty autocomplete=off autocapitalize=off placeholder="Type the romaji or meaning" onkeydown="if(event.key=='Enter')chk()"><button class=btn onclick="chk()">Check</button>`
   :OPS.map((o,j)=>`<button class="btn opt" onclick="pick(${j})">${esc(o)}</button>`).join('');
  const hint=m=='flip'?'Tap to reveal':m=='listen'?'Listen and choose':'';
- return `<div class=rh><button class=ib onclick="exitR()" aria-label="Exit review">${SYS.dismiss}</button><div class=bar><div style="--f:${pv}%;--w:${cur}%"></div></div><button class=ib onclick="SH=1;render()" aria-label="Review settings">${SYS.settings}</button></div>
+ return `<div class=rh><button class=ib onclick="askQuit('r')" aria-label="Exit review">${SYS.dismiss}</button><div class=bar><div style="--f:${pv}%;--w:${cur}%"></div></div><button class=ib onclick="SH=1;render()" aria-label="Review settings">${SYS.settings}</button></div>
  <div class="fc ${f&&!document.startViewTransition?'in':''}" ${m=='flip'?`onclick="flip=1;say(card(Q[0]).say);render()"`:''} style="${c.sm?'font-size:28px':''}"><div>${m=='listen'&&!AN?vb(c.say,'lg'):c.f}</div>${sv}${shown?`<div class=back>${c.b}</div>`:hint?`<div class=back style="animation:none">${hint}</div>`:''}</div>${ctl}
  ${SH?`<div class=sheet onclick="SH=0;render()"><div onclick="event.stopPropagation()"><h3>What to review</h3>${[['all','Everything'],['chars','Kanji & alphabet'],['phr','Sentences & phrases']].map(([k,n])=>`<button class="btn opt${S.filter==k?' sel':''}" onclick="setF('${k}')">${n}</button>`).join('')}</div></div>`:''}`}
 function forecast(){const t=td(),c=Array(14).fill(0);Object.values(S.cards).forEach(s=>{if(!s.r)return;for(let k=0;k<14;k++)if(k?s.d==td(k):s.d<=t){c[k]++;break}});const mx=Math.max(...c,1);
@@ -203,7 +207,7 @@ function forecast(){const t=td(),c=Array(14).fill(0);Object.values(S.cards).forE
 const lvl=()=>{const L=Math.floor(Math.sqrt(S.xp/25))+1,lo=25*(L-1)**2,hi=25*L*L,an=LVA;LVA=0;return `<div class=lvb><div class=lvt><b>Level ${L}</b><span>${S.xp-lo} / ${hi-lo} <b class=xp>XP</b></span></div><div class=lvbar><div class="${an?'':'na'}" style="--w:${(S.xp-lo)/(hi-lo)*100}%"></div></div></div>`};
 function cal(){const o=[];for(let k=-34;k<=0;k++){const d=td(k),n=S.hist[d]||0;o.push(`<i class="d${n?n<S.goal/2?1:n<S.goal?2:3:0}" title="${d}: ${n}"></i>`)}return `<div class=cal>${o.join('')}</div>`}
 function theme(){document.documentElement.dataset.theme=S.theme=='dark'||(S.theme=='auto'&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light'}
-function startRev(){Q=dueIds();RT=Q.length;SX=0;PV=0;fresh=1;RV=1;flip=0;OPK='';vt(render)}
+function startRev(){SNAP=structuredClone(S);Q=dueIds();RT=Q.length;SX=0;PV=0;fresh=1;RV=1;flip=0;OPK='';vt(render)}
 function rate(g,q){if(!q)fb(g);const id=Q.shift(),s=S.cards[id],e=s.e||2.5,i=Math.max(s.i||0,1);SX+=g?10:2;fresh=1;
  if(!s.r){if(S.nd!=td()){S.nd=td();S.nn=0}S.nn++}
  s.r=(s.r||0)+1;
@@ -271,7 +275,7 @@ const fp=t=>furi(t).replace(/<span class=unk onclick="[^"]*">/g,'<span>');
 const chipH=(t,fn,cls='')=>`<button class="chip ${cls}" ${fn?`onclick="${fn}"`:'disabled'}>${fp(t)}</button>`;
 function sentPool(){const L={N5:1,N4:2,N3:3,N2:4,N1:5},lv=({'Pre-N5':1,N5:1,N4:2,N3:3,N2:4,N1:5})[S.lv]||1;
  return[...S.custom.filter(c=>c.p&&c.p.length>1).map(c=>({p:c.p,m:c.m,c:1,f:0})),...SENT.filter(x=>L[x[0]]<=lv).map(x=>({p:x[1].split(' '),m:x[2],f:x[3]}))]}
-function startBuild(){const P=shuf(sentPool()),cu=P.filter(x=>x.c).slice(0,2),r=P.filter(x=>!x.c).slice(0,6-cu.length);SB={q:shuf([...cu,...r]),i:0,sc:0,xp:0};nextB();go('build')}
+function startBuild(){SNAP=structuredClone(S);const P=shuf(sentPool()),cu=P.filter(x=>x.c).slice(0,2),r=P.filter(x=>!x.c).slice(0,6-cu.length);SB={q:shuf([...cu,...r]),i:0,sc:0,xp:0};nextB();go('build')}
 function nextB(){const q=SB.q[SB.i];let b;for(let n=0;n<9;n++){b=shuf(q.p.map((t,k)=>({t,k})));if(q.p.length<2||b.some((x,j)=>x.k!=j))break}SB.bank=b;SB.ans=[];SB.res=null;SB.mv=null}
 const rB=()=>{$('#bd').innerHTML=bView()};
 function bView(){const q=SB.q[SB.i],d=SB.res,fix=q.p.join('');
@@ -289,7 +293,7 @@ function bCheck(){const q=SB.q[SB.i],g=SB.ans.map(k=>q.p[k]),c=q.p,ex=g.join('|'
 function bNext(){SB.i++;if(SB.i<SB.q.length)nextB();vt(render);if(SB.i>=SB.q.length)confetti()}
 views.build=()=>{if(!SB){T='cards';return views.cards()}const n=SB.q.length;
  if(SB.i>=n)return `<div class=hero><div class=bounce>${ic('party')}</div>${SB.sc}/${n}<small> correct · +${SB.xp} XP</small></div><button class=btn onclick="startBuild()">Practice again</button><button class="btn alt" onclick="go('cards')">Done</button>`;
- return `<div class=rh><button class=ib onclick="go('cards')" aria-label="Exit">${SYS.dismiss}</button><div class=bar><div style="--f:${Math.max(0,(SB.i-1)/n*100)}%;--w:${SB.i/n*100}%"></div></div></div><div id=bd>${bView()}</div>`};
+ return `<div class=rh><button class=ib onclick="askQuit('b')" aria-label="Exit">${SYS.dismiss}</button><div class=bar><div style="--f:${Math.max(0,(SB.i-1)/n*100)}%;--w:${SB.i/n*100}%"></div></div></div><div id=bd>${bView()}</div>`};
 const SM={goal:[5,5,20],newMax:[0,5,10],revMax:[10,10,100]};
 function stSet(k,v){const[m,,d]=SM[k],n=Math.round(+v);S[k]=v!==''&&isFinite(n)?Math.max(m,n):d;const e=$('#s_'+k);if(e)e.value=S[k];save()}
 const stp=(k,d)=>stSet(k,S[k]+d*SM[k][1]);
@@ -304,7 +308,7 @@ function render(){document.querySelectorAll('nav button').forEach(b=>b.classList
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>go(b.dataset.t));
 load().then(d=>{if(d)S=Object.assign(S,d);S.words.forEach(fixW);const h=new Set(S.words.map(x=>x.w+x.r));SEED.forEach(x=>h.has(x.w+x.r)||S.words.push(x));FI=null;mig();migCk();theme();render()});
 navigator.storage?.persist?.();
-if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js');
+if('serviceWorker'in navigator){const had=navigator.serviceWorker.controller;navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had)location.reload()})}
 
 theme();matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change',theme);
 document.querySelectorAll('nav i').forEach(e=>e.innerHTML=NAV[e.dataset.n]);$('.brand i').innerHTML=ic('flag');

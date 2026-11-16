@@ -117,3 +117,5 @@ body.sm main{padding-bottom:110px}
 }
 .kmore{display:block;width:100%;margin:14px 0 4px;padding:12px;border:2px solid var(--l);border-bottom-width:4px;border-radius:14px;background:var(--bg);color:var(--bd);font:inherit;font-weight:700;cursor:pointer;transition:transform .12s var(--e),background .2s}.kmore:active{transform:translateY(2px)}.kmore small{display:block;color:var(--s);font-weight:400}
 .qs{text-align:center}.qs h3{margin:6px 0}.qs p{color:var(--s);margin:0 0 14px}.sad{display:block;margin:0 auto 6px;width:128px;max-width:55%;height:auto}nav i .si{width:1em;height:1em;display:block}
+/* furigana inside sentence-builder chips: stacked above the kanji with a small gap and room under the chip's top border, so it is never cut off or squashed into the kanji */
+.chip.fr{align-items:flex-end;padding-bottom:8px}.chip ruby{display:inline-flex;flex-direction:column-reverse;align-items:center}.chip rt{display:block;font-size:10px;line-height:1;margin-bottom:1px;white-space:nowrap}

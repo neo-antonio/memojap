@@ -280,7 +280,7 @@ views.deck=()=>`<div class=rh><button class=ib onclick="go('cards')" aria-label=
  <input id=dq type=search placeholder="Search your deck" value="${esc(DQ)}" oninput="DQ=this.value;DL=60;dRef()"><div id=dl>${deckList(1)}</div>`;
 // ---- Sentence builder: tap word chips into order. Words come from sentences.js plus your own sentence cards typed with spaces.
 const fp=t=>furi(t).replace(/<span class=unk onclick="[^"]*">/g,'<span>');
-const chipH=(t,fn,cls='')=>`<button class="chip ${cls}" ${fn?`onclick="${fn}"`:'disabled'}>${fp(t)}</button>`;
+const chipH=(t,fn,cls='')=>{const h=fp(t);return `<button class="chip ${cls}${h.includes('<ruby>')?' fr':''}" ${fn?`onclick="${fn}"`:'disabled'}>${h}</button>`};
 function sentPool(){const L={N5:1,N4:2,N3:3,N2:4,N1:5},lv=({'Pre-N5':1,N5:1,N4:2,N3:3,N2:4,N1:5})[S.lv]||1;
  return[...S.custom.filter(c=>c.p&&c.p.length>1).map(c=>({p:c.p,m:c.m,c:1,f:0})),...SENT.filter(x=>L[x[0]]<=lv).map(x=>({p:x[1].split(' '),m:x[2],f:x[3]}))]}
 function startBuild(){const P=shuf(sentPool()),cu=P.filter(x=>x.c).slice(0,2),r=P.filter(x=>!x.c).slice(0,6-cu.length);lsSnap();SB={q:shuf([...cu,...r]),i:0,sc:0,xp:0};nextB();go('build',1)}

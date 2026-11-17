@@ -114,30 +114,29 @@ cards(){if(RV)return review();const due=dueIds(),i=Math.floor(Date.now()/864e5)%
  return `${S.name?`<h2 class=hi>Hello, ${esc(S.name)}!</h2>`:''}${lvl()}<div class=hero>${due.length}<small> to study</small><div style="font-size:14px;color:var(--s)">${due.filter(k=>!S.cards[k].r).length} new · ${due.filter(k=>S.cards[k].r).length} review</div><div class=row2><button class=btn onclick="startRev()" ${due.length?'':'disabled'}>Start review</button><button class="btn alt" onclick="startBuild()">Build sentences</button></div></div>
  
  <div class=card2><b>My deck</b> <small>${DK().length} cards · ${DK().filter(k=>!S.cards[k].r).length} new</small><div class=row2><button class="btn alt" onclick="go('deck')">View &amp; manage</button><button class=btn onclick="AD=1;render()">+ Add card</button></div></div>
+ <div class=card2><b>Level &amp; practice</b> <small>Your level: ${S.lv}</small><button class=btn onclick="startTest()">Fluency check (N5–N1)</button><button class="btn alt" onclick="chat()">Practice with ChatGPT</button><button class="btn alt" onclick="TS=1;render()">Free N5–N1 tests</button></div>
  <div class=card2><small>Word of the day</small><div class=wd><div class=jp>${furi(dw.w)}</div>${vb(dw.w)}</div>${esc(dw.m)}<button class="btn alt" onclick="addC(${i})">${inD?'In deck':'+ Add to deck'}</button></div>
  ${forecast()}
- ${AD?addSheet():''}`},
+ ${AD?addSheet():''}${TS?testSheet():''}`},
 prof(){const n=Object.keys(S.cards).length,m=Object.values(S.cards).filter(c=>(c.i||0)>=21).length;
  const[mo,mt]=mood();
  return `<div class=av><img src="img/${mo}.png" alt="" class="${mo=='amazed'?'bounce':''}"><div class=avt>${mt}</div></div><div class=hero>${ic('fire')} ${st()}<small> day streak</small></div><p><b>Today:</b> ${S.day==td()?S.today:0}/${S.goal} reviews</p><div class=bar><div style="width:${Math.min(100,(S.day==td()?S.today:0)/S.goal*100)}%"></div></div>
  <p>${S.xp} <b class=xp>XP</b> · ${ic('cards')} ${n} cards · ${ic('medal')} ${m} mastered</p><h3>Last 5 weeks</h3>${cal()}
  <h3 class=sh>Your name</h3><input maxlength=24 placeholder="What should we call you?" value="${esc(S.name||'')}" onchange="S.name=this.value.trim();save()">
- <h3 class=sh>My level</h3><div class=lvs id=lvs>${['Pre-N5','N5','N4','N3','N2','N1'].map(l=>`<button class="${S.lv==l?'on':''}" onclick="setLv('${l}')">${l}</button>`).join('')}</div>
-
- <button class=btn onclick="startTest()">Fluency check (N5–N1)</button>
- <button class="btn alt" onclick="chat()">Practice with ChatGPT</button>`},
+ <h3 class=sh>My level</h3><div class=lvs id=lvs>${['Pre-N5','N5','N4','N3','N2','N1'].map(l=>`<button class="${S.lv==l?'on':''}" onclick="setLv('${l}')">${l}</button>`).join('')}</div><p class=cred id=lvn>${lvNote()}</p>`},
 set(){const on=k=>k=='sfx'?S.sfx!==false:!!S.tts,TH=['auto','light','dark'],
  sp=(k,l)=>`<div class=st><span>${l}</span><div class=sp><button onclick="stp('${k}',-1)" aria-label="Decrease">−</button><input type=number id=s_${k} value=${S[k]} min=${SM[k][0]} onchange="stSet('${k}',this.value)"><button onclick="stp('${k}',1)" aria-label="Increase">+</button></div></div>`,
  tg=(k,l,i)=>`<div class=tgc><button class="tg${on(k)?'':' off'}" aria-pressed=${on(k)} aria-label="${l}" onclick="tgl('${k}',this)">${i}<svg class=sl viewBox="0 0 24 24"><path class=o d="M4.5 4.5L19.5 19.5"/><path class=w d="M4.5 4.5L19.5 19.5"/></svg></button><span>${l}</span></div>`;
  return `<h3 class=sh>Study</h3>${sp('goal','Daily goal (reviews)')}${sp('newMax','New cards per day')}${sp('revMax','Max reviews per day')}
  <h3 class=sh>Sound</h3><div class=tgs>${tg('tts','Read cards aloud',SPK)}${tg('sfx','Sound effects','<svg class=vi viewBox="0 0 24 24"><path d="M9 18V6l10-2v12" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6.5" cy="18" r="3" fill="currentColor" stroke="none"/><circle cx="16.5" cy="16" r="3" fill="currentColor" stroke="none"/></svg>')}</div>
+ <h3 class=sh>Furigana</h3>${furRow()}
  <h3 class=sh>Appearance</h3>${segH('thm',TH,S.theme,'setTheme',{auto:'Auto',light:'Light',dark:'Dark'})}
  <h3 class=sh>Backup</h3><div class=row2><button class="btn alt" onclick="exp()">Export backup</button><button class="btn alt" onclick="$('#im').click()">Import backup</button></div><input id=im type=file accept=.json hidden onchange="imp(this.files[0])">
  <button class="btn dng" onclick="wipe()">Delete all data</button>
  <p class=cred>Stroke data: KanjiVG (CC BY-SA 3.0). Kanji: KANJIDIC (EDRDG, CC BY-SA 4.0). Word lists: JLPT lists by Jonathan Waller, via JMdict data.</p>`},
-test(){if(AS.i>=QC.length){let l='Pre-N5';for(const x of['N5','N4','N3','N2','N1']){if(AS.sc[x]>=3)l=x;else break}
- return `<div class=hero>${l}<small> estimated</small></div><p>${['N5','N4','N3','N2','N1'].map(x=>`${x} ${AS.sc[x]}/5`).join(' · ')}</p><p>This is a rough estimate from a short quiz. It does not test listening or speaking.</p><button class=btn onclick="S.lv='${l}';save();go('prof')">Set as my level</button>`}
- const q=QC[AS.i];return `<small>${q[0]} · ${AS.i+1}/${QC.length}</small><div class=q>${q[1]}</div>${q[2].map((o,j)=>`<button class="btn opt" onclick="ans(${j},this)">${o}</button>`).join('')}`}};
+test(){if(AS.i>=QC.length){const l=estLv();
+ return `<div class=hero>${l}<small> estimated</small></div><p>${['N5','N4','N3','N2','N1'].map(x=>`${x} ${AS.sc[x]}/5`).join(' · ')}</p><p>This is a rough estimate from a short quiz. It does not test listening or speaking.</p><p>Your level is now set to <b>${l}</b>. You can override it any time in Profile.</p><button class=btn onclick="go('cards')">Done</button><button class="btn alt" onclick="go('prof')">Change my level</button><button class="btn alt" onclick="startTest()">Retake the check</button>`}
+ const q=QC[AS.i],n=QC.length;return `<div class=rh><button class=ib onclick="go('cards')" aria-label="Exit">${SYS.dismiss}</button><div class=bar><div style="--f:${Math.max(0,(AS.i-1)/n*100)}%;--w:${AS.i/n*100}%"></div></div></div><small>${q[0]} · ${AS.i+1}/${n}</small><div class=q>${q[1]}</div>${q[2].map((o,j)=>`<button class="btn opt" onclick="ans(${j},this)">${o}</button>`).join('')}`}};
 // ---- Custom kanji: kanji / combinations that are not in the built-in kanji list
 let CKE=null;
 const ckSheet=()=>{const x=CKE?CKM(CKE):null;return `<div class=sheet onclick="ckClose()"><div onclick="event.stopPropagation()"><div class=rh style="justify-content:space-between"><h3 style="margin:0">${x?'Edit':'New'} custom kanji</h3><button class=ib onclick="ckClose()" aria-label="Close">${SYS.dismiss}</button></div>
@@ -205,8 +204,8 @@ function review(){if(!Q.length)return `<div class=hero><div class=bounce>${ic('p
  const kc=id[0]=='x'?(CKM(id.slice(2))||{}).w:id.slice(2),pad=W?`<div class=pad style="margin:14px auto"><svg class="guide${flip?'':' hide'}" viewBox="0 0 109 109">${(STK[kc]||[]).map(d=>`<path d="${d}"/>`).join('')}</svg><canvas id=cv width=300 height=300></canvas></div>`:'';
  const hint=m=='flip'?'Tap to reveal':m=='listen'?'Listen and choose':'';
  return `<div class=rh><button class=ib onclick="askQuit('r')" aria-label="Exit review">${SYS.dismiss}</button><div class=bar><div style="--f:${pv}%;--w:${cur}%"></div></div><button class=ib onclick="SH=1;render()" aria-label="Review settings">${SYS.settings}</button></div>
- <div class="fc ${f&&!document.startViewTransition?'in':''}" ${m=='flip'?`onclick="flip=1;say(card(Q[0]).say);render()"`:''} style="${c.sm?'font-size:28px':''}"><div>${W&&!flip?`<div style="font-size:20px;font-weight:800;line-height:1.5">Write this kanji<br><span style="font-size:18px;font-weight:700">${c.b}</span></div>`:m=='listen'&&!AN?vb(c.say,'lg'):c.f}</div>${sv}${shown?`<div class=back>${c.b}</div>`:hint?`<div class=back style="animation:none">${hint}</div>`:''}</div>${W?pad:''}${ctl}
- ${SH?`<div class=sheet onclick="SH=0;render()"><div onclick="event.stopPropagation()"><h3>What to review</h3>${[['all','Everything'],['chars','Kanji & alphabet'],['phr','Sentences & phrases']].map(([k,n])=>`<button class="btn opt${S.filter==k?' sel':''}" onclick="setF('${k}')">${n}</button>`).join('')}</div></div>`:''}`}
+ <div class="fc ${f&&!document.startViewTransition?'in':''}" ${m=='flip'?`onclick="flip=1;say(card(Q[0]).say);render()"`:''} style="${c.sm?'font-size:28px':''}"><div>${W&&!flip?`<div style="font-size:20px;font-weight:800;line-height:1.5">Write this kanji<br><span style="font-size:18px;font-weight:700">${c.b}</span></div>`:m=='listen'&&!AN?vb(c.say,'lg'):CF(id,c)}</div>${sv}${shown?`<div class=back>${c.b}</div>`:hint?`<div class=back style="animation:none">${hint}</div>`:''}</div>${W?pad:''}${ctl}
+ ${SH?`<div class=sheet onclick="SH=0;render()"><div onclick="event.stopPropagation()"><h3>What to review</h3>${[['all','Everything'],['chars','Kanji & alphabet'],['phr','Sentences & phrases']].map(([k,n])=>`<button class="btn opt${S.filter==k?' sel':''}" onclick="setF('${k}')">${n}</button>`).join('')}<h3 class=sh>Display</h3>${furRow()}</div></div>`:''}`}
 function forecast(){const t=td(),c=Array(14).fill(0);Object.values(S.cards).forEach(s=>{if(!s.r)return;for(let k=0;k<14;k++)if(k?s.d==td(k):s.d<=t){c[k]++;break}});const mx=Math.max(...c,1);
  return `<div class=card2><b>Coming up</b> <small>${c.slice(1,8).reduce((a,b)=>a+b,0)} reviews in the next 7 days</small><div class=fcst>${c.map((v,k)=>`<div><span>${v||''}</span><i style="height:${v/mx*100}%;animation-delay:${k*30}ms"></i><small>${k?'SMTWTFS'[new Date(td(k)+'T00:00').getDay()]:'Now'}</small></div>`).join('')}</div></div>`}
 const lvl=()=>{const L=Math.floor(Math.sqrt(S.xp/25))+1,lo=25*(L-1)**2,hi=25*L*L,an=LVA;LVA=0;return `<div class=lvb><div class=lvt><b>Level ${L}</b><span>${S.xp-lo} / ${hi-lo} <b class=xp>XP</b></span></div><div class=lvbar><div class="${an?'':'na'}" style="--w:${(S.xp-lo)/(hi-lo)*100}%"></div></div></div>`};
@@ -242,7 +241,7 @@ function chat(){const weak=Object.keys(S.cards).filter(k=>(S.cards[k].i||0)<4&&c
  (navigator.clipboard?navigator.clipboard.writeText(p):Promise.resolve()).catch(()=>{});window.open('https://chatgpt.com/?q='+encodeURIComponent(p),'_blank')}
 function exp(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S)],{type:'application/json'}));a.download='memojap-backup-'+td()+'.json';a.click()}
 function imp(f){if(!f)return;f.text().then(t=>{S=Object.assign(S,JSON.parse(t));FI=null;save();render();toast('Backup restored')}).catch(()=>toast('Invalid file'))}
-function ans(j,b){const ok=j==QC[AS.i][3];if(ok)AS.sc[QC[AS.i][0]]++;document.querySelectorAll('.opt').forEach(x=>x.disabled=1);b.classList.add(ok?'ok':'bad');fb(ok,ok?'Correct!':'Not quite');setTimeout(()=>{AS.i++;render()},800)}
+function ans(j,b){const ok=j==QC[AS.i][3];if(ok)AS.sc[QC[AS.i][0]]++;document.querySelectorAll('.opt').forEach(x=>x.disabled=1);b.classList.add(ok?'ok':'bad');fb(ok,ok?'Correct!':'Not quite');setTimeout(()=>{AS.i++;if(AS.i>=QC.length&&!AS.done){AS.done=1;S.lv=estLv();S.lvSrc='test';S.lvAt=td();save()}render()},800)}
 // Original practice questions written in the JLPT multiple-choice style (official test items are copyrighted)
 const QS=[['N5','まいあさ ( ) を のみます。',['ごはん','みず','パン','たまご'],1],['N5','「学校」の よみかたは?',['がっこう','がくこう','がっこ','がくこ'],0],['N5','きのう えいがを ( )。',['みます','みました','みる','みて'],1],
 ['N4','あした 雨が ( ) そうです。',['ふる','ふり','ふって','ふれば'],0],['N4','「準備」の よみかたは?',['じゅんび','しゅんび','じゅうび','じゅんひ'],0],['N4','先生に 本を ( )。',['いただきました','くださいました','あげました','やりました'],0],
@@ -252,6 +251,7 @@ QS.push(['N5','「みせ」の かんじは?',['店','庭','広','座'],0],['N5'
 ['N3','雨が 降りそうだ ( )、傘を 持って いこう。',['から','のに','けれど','ても'],0],['N3','「環境」の よみかたは?',['かんきょう','かんぎょう','かんけい','かんきょ'],0],['N3','彼女は 毎日 練習した ( ) 、上手に なった。',['かいがあって','せいで','くせに','わりに'],0],['N3','試験に 合格できる( )、毎日 勉強しています。',['ように','ために','ばかり','ほど'],0],['N3','「増える」の はんたいは?',['減る','上がる','落ちる','消える'],0]);
 QS.push(['N2','「頻繁」の よみかたは?',['ひんぱん','ひんぱ','ひんはん','びんぱん'],0],['N2','「妥協」の よみかたは?',['だきょう','たきょう','だこう','だけい'],0],['N2','彼は新人( )、仕事が早い。',['にしては','にとって','に関して','として'],0],['N2','天気予報( )、明日は雪が降るそうだ。',['によると','にとって','について','に対して'],0],['N2','彼は医者である( )、作家でもある。',['と同時に','に対して','にしては','わりに'],0],['N2','「増加」の はんたいは?',['減少','上昇','拡大','成長'],0],
 ['N1','「懸念」の よみかたは?',['けねん','けんねん','かんねん','けいねん'],0],['N1','「遂行」の よみかたは?',['すいこう','ついこう','すいぎょう','つうこう'],0],['N1','お客様のご要望( )、サービスを改善いたします。',['を踏まえて','をよそに','ならでは','ともなると'],0],['N1','周囲の反対( )、彼は留学を決意した。',['をよそに','をもとに','にかかわらず','に先立って'],0],['N1','社長( )人が、そんな不正をするはずがない。',['ともあろう','ばかりの','からする','といえども'],0],['N1','「脆い」の よみかたは?',['もろい','ひどい','にぶい','するどい'],0]);
+const estLv=()=>{let l='Pre-N5';for(const x of['N5','N4','N3','N2','N1']){if(AS.sc[x]>=3)l=x;else break}return l};
 function startTest(){QC=[];for(const L of['N5','N4','N3','N2','N1'])QS.filter(q=>q[0]==L).sort(()=>Math.random()-.5).slice(0,5).forEach(q=>{const o=q[2].map((t,i)=>[t,i==q[3]]).sort(()=>Math.random()-.5);QC.push([L,q[1],o.map(x=>x[0]),o.findIndex(x=>x[1])])});AS={i:0,sc:{N5:0,N4:0,N3:0,N2:0,N1:0}};go('test')}
 // ---- Deck manager: see every card, filter/search, remove (with undo)
 const DK=()=>Object.keys(S.cards).filter(k=>card(k));
@@ -279,7 +279,14 @@ views.deck=()=>`<div class=rh><button class=ib onclick="go('cards')" aria-label=
  <div class=fl>${DFL.map(([k,n])=>`<button class="${DF==k?'on':''}" onclick="setDF('${k}')">${n}</button>`).join('')}</div>
  <input id=dq type=search placeholder="Search your deck" value="${esc(DQ)}" oninput="DQ=this.value;DL=60;dRef()"><div id=dl>${deckList(1)}</div>`;
 // ---- Sentence builder: tap word chips into order. Words come from sentences.js plus your own sentence cards typed with spaces.
-const fp=t=>furi(t).replace(/<span class=unk onclick="[^"]*">/g,'<span>');
+const fp=t=>S.furi===false?esc(t):furi(t).replace(/<span class=unk onclick="[^"]*">/g,'<span>');
+const CF=(id,c)=>id[0]=='c'&&S.furi===false?esc(c.say):c.f;
+const furRow=()=>`<div class=st><span>Show furigana</span><button class="sw${S.furi!==false?' on':''}" data-f=1 role=switch aria-checked="${S.furi!==false}" aria-label="Show furigana" onclick="tgFuri()"></button></div><p class=cred>Only affects Review and Build sentences. Also in Settings.</p>`;
+// Flip in place: the switches update and only the content behind the open sheet is refreshed, so the sheet does not re-animate
+function tgFuri(){S.furi=S.furi===false;save();document.querySelectorAll('.sw[data-f]').forEach(x=>{x.classList.toggle('on',S.furi!==false);x.setAttribute('aria-checked',S.furi!==false)});furRefresh()}
+function furRefresh(){if(T=='build'&&SB){if($('#bd'))rB();return}
+ if(RV){const t=document.createElement('div');t.innerHTML=review();const n=t.querySelector('.fc>div'),o=$('.fc>div');if(n&&o)o.innerHTML=n.innerHTML}}
+const bSheet=()=>`<div class=sheet onclick="SH=0;render()"><div onclick="event.stopPropagation()"><h3>Options</h3>${furRow()}<button class=btn onclick="SH=0;render()">Done</button></div></div>`;
 const chipH=(t,fn,cls='')=>`<button class="chip ${cls}" ${fn?`onclick="${fn}"`:'disabled'}>${fp(t)}</button>`;
 function sentPool(){const L={N5:1,N4:2,N3:3,N2:4,N1:5},lv=({'Pre-N5':1,N5:1,N4:2,N3:3,N2:4,N1:5})[S.lv]||1;
  return[...S.custom.filter(c=>c.p&&c.p.length>1).map(c=>({p:c.p,m:c.m,c:1,f:0})),...SENT.filter(x=>L[x[0]]<=lv).map(x=>({p:x[1].split(' '),m:x[2],f:x[3]}))]}
@@ -301,17 +308,26 @@ function bCheck(){const q=SB.q[SB.i],g=SB.ans.map(k=>q.p[k]),c=q.p,ex=g.join('|'
 function bNext(){SB.i++;if(SB.i<SB.q.length)nextB();vt(render);if(SB.i>=SB.q.length)confetti()}
 views.build=()=>{if(!SB){T='cards';return views.cards()}const n=SB.q.length;
  if(SB.i>=n)return `<div class=hero><div class=bounce>${ic('party')}</div>${SB.sc}/${n}<small> correct · +${SB.xp} XP</small></div><button class=btn onclick="startBuild()">Practice again</button><button class="btn alt" onclick="go('cards')">Done</button>`;
- return `<div class=rh><button class=ib onclick="askQuit('b')" aria-label="Exit">${SYS.dismiss}</button><div class=bar><div style="--f:${Math.max(0,(SB.i-1)/n*100)}%;--w:${SB.i/n*100}%"></div></div></div><div id=bd>${bView()}</div>`};
+ return `<div class=rh><button class=ib onclick="askQuit('b')" aria-label="Exit">${SYS.dismiss}</button><div class=bar><div style="--f:${Math.max(0,(SB.i-1)/n*100)}%;--w:${SB.i/n*100}%"></div></div><button class=ib onclick="SH=1;render()" aria-label="Options">${SYS.settings}</button></div><div id=bd>${bView()}</div>${SH?bSheet():''}`};
 const SM={goal:[5,5,20],newMax:[0,5,10],revMax:[10,10,100]};
 function stSet(k,v){const[m,,d]=SM[k],n=Math.round(+v);S[k]=v!==''&&isFinite(n)?Math.max(m,n):d;const e=$('#s_'+k);if(e)e.value=S[k];save()}
 const stp=(k,d)=>stSet(k,S[k]+d*SM[k][1]);
 function tgl(k,b){const v=k=='sfx'?S.sfx===false:!S.tts;S[k]=v;save();b.classList.toggle('off',!v);b.setAttribute('aria-pressed',v);if(v&&k=='sfx')SFX.ok()}
 function setTheme(v){const L=['auto','light','dark'],g=$('#thm'),n=L.indexOf(v);S.theme=v;save();theme();g.style.setProperty('--i',n);g.querySelectorAll('button').forEach((b,i)=>b.classList.toggle('on',i==n))}
-function setLv(v){S.lv=v;save();document.querySelectorAll('#lvs button').forEach(b=>b.classList.toggle('on',b.textContent==v))}
-let LVA=1;
+const lvNote=()=>S.lvSrc=='test'?`Set from your fluency check${S.lvAt?' on '+S.lvAt:''}. Tap a level to override it.`:S.lvSrc=='manual'?'Set by you. Take the fluency check on the Learn tab to update it automatically.':'Take the fluency check on the Learn tab to set this automatically, or pick a level.';
+function setLv(v){S.lv=v;S.lvSrc='manual';save();const n=$('#lvn');if(n)n.textContent=lvNote();document.querySelectorAll('#lvs button').forEach(b=>b.classList.toggle('on',b.textContent==v))}
+let LVA=1,TS=0;
+// Free practice tests (checked: no payment needed to take them). Estimates only, none give an official certificate.
+const FT=[
+{n:'Official JLPT sample questions',d:'From the organisers of the real test. One sample of every question type, N1 to N5.',l:[['Open N1–N5','https://www.jlpt.jp/e/samples/forlearners.html']]},
+{n:'Official practice workbooks',d:'Sample exams for every level, free to download from the JLPT website.',l:[['Open workbooks','https://www.jlpt.jp/e/samples/sampleindex.html?mode=pc']]},
+{n:'Nihongo Master',d:'Free, no account. 25-question tests with real audio and an instant score, plus a 5-minute level test.',l:[['Level test (5 min)','https://www.nihongomaster.com/japanese-level-test'],['N5 test','https://www.nihongomaster.com/jlpt-n5-practice-test'],['N4 test','https://www.nihongomaster.com/jlpt-n4-practice-test']]},
+{n:'GyanMirai',d:'Free, no account. 20-question grammar quizzes for every level with your score and the answers. Written explanations for some questions are on their paid plan.',l:[['N5','https://www.gyanmirai.com/jlpt/jlpt-n5/grammar-practice-test'],['N4','https://www.gyanmirai.com/jlpt/jlpt-n4/grammar-practice-test'],['N3','https://www.gyanmirai.com/jlpt/jlpt-n3/grammar-practice-test'],['N2','https://www.gyanmirai.com/jlpt/jlpt-n2/grammar-practice-test'],['N1','https://www.gyanmirai.com/jlpt/jlpt-n1/grammar-practice-test']]}];
+const testSheet=()=>`<div class=sheet onclick="TS=0;render()"><div onclick="event.stopPropagation()"><div class=rh style="justify-content:space-between"><h3 style="margin:0">Free N5–N1 tests</h3><button class=ib onclick="TS=0;render()" aria-label="Close">${SYS.dismiss}</button></div>
+ <div class=cred>Free practice and level checks. They are only estimates, not official certification. Links open in your browser.</div>${FT.map(f=>`<div class=card2><b>${esc(f.n)}</b><div class=cred style="margin:4px 0 10px">${esc(f.d)}</div><div class=tls>${f.l.map(([t,u])=>`<a href="${esc(u)}" target=_blank rel=noopener>${esc(t)}</a>`).join('')}</div></div>`).join('')}</div></div>`;
 async function wipe(){if(!confirm('Delete ALL your data? Cards, progress, XP and settings will be erased. This cannot be undone.'))return;const d=await idb,tx=d.transaction('s','readwrite');tx.objectStore('s').clear();tx.oncomplete=()=>location.reload()}
-function go(t){LVA=1;vt(()=>{T=t;KD=null;RV=0;ALL=0;SQ='';AD=0;CKE=null;SEL=null;DQ='';DL=60;document.body.classList.remove('sm');if(t!='build')SB=null;render()})}
-function render(){document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t==({test:'prof',build:'cards',deck:'cards'}[T]||T)));
+function go(t){LVA=1;vt(()=>{T=t;SH=0;TS=0;KD=null;RV=0;ALL=0;SQ='';AD=0;CKE=null;SEL=null;DQ='';DL=60;document.body.classList.remove('sm');if(t!='build')SB=null;render()})}
+function render(){document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t==({test:'cards',build:'cards',deck:'cards'}[T]||T)));
  hud();M.innerHTML=views[T]();if(T=='alpha'&&!KD)selBar();$('#ty')?.focus();if(AD)$('#tx')?.focus();if(CKE!==null)$('#cw')?.focus();if(KD){initCv();setTimeout(play,250)}else if(RV&&EM=='write'){initCv();wRestore()}scrollTo(0,0)}
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>go(b.dataset.t));
 load().then(d=>{if(d)S=Object.assign(S,d);S.words.forEach(fixW);const h=new Set(S.words.map(x=>x.w+x.r));SEED.forEach(x=>h.has(x.w+x.r)||S.words.push(x));FI=null;mig();migCk();theme();render()});

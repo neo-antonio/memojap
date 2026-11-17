@@ -146,3 +146,11 @@ nav i{transition:transform .45s cubic-bezier(.25,.8,.35,1)}nav button.on i{trans
 .chip{overflow:visible}.chip rt{top:-.9em;z-index:2;font-size:.46em;font-weight:700}.bz,.bb{padding-top:14px}
 .vg.col{flex-direction:row;gap:14px}.vg.col .vb{background:var(--b);color:#fff;border-color:var(--bd)}
 .chip{height:62px}.guide.hide{opacity:0}.guide{transition:opacity .3s}
+
+/* Build sentences: the answer lines sit directly under each row of chips (chip 62px + 8px gap = 70px per row) */
+.bz{padding:0 0 8px;margin-top:16px;min-height:148px;background:linear-gradient(to bottom,transparent 0,transparent 66px,var(--l) 66px,var(--l) 68px,transparent 68px) 0 0/100% 70px repeat-y}
+/* Free tests sheet */
+.tls{display:flex;flex-wrap:wrap;gap:8px}.tls a{flex:1 1 auto;min-width:72px;text-align:center;text-decoration:none;padding:10px 12px;border:2px solid var(--l);border-bottom-width:4px;border-radius:14px;background:var(--bg);color:var(--bd);font-weight:800;font-size:15px}.tls a:active{transform:translateY(2px)}
+
+/* compact on/off switch (furigana) */
+.sw{position:relative;flex:none;width:52px;height:30px;padding:0;border:2px solid var(--l);border-radius:15px;background:var(--l);cursor:pointer;transition:background .2s,border-color .2s}.sw::after{content:"";position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px #0004;transition:transform .2s var(--e)}.sw.on{background:var(--b);border-color:var(--bd)}.sw.on::after{transform:translateX(22px)}

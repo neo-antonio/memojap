@@ -67,7 +67,7 @@ const st=()=>S.last==td()||S.last==td(-1)?S.streak:0;
 // Avatar mood: amazed on milestones (30, 50, 100, 150, ... every 50, plus every 365), sad if a streak of 7+ days was lost, angry if a shorter one was, otherwise happy
 function mood(){const c=st(),M=n=>n==30||(n>=50&&n%50==0)||(n>=365&&n%365==0);let l=0;if(!c&&S.streak>0&&S.last)l=S.streak;else if(S.lost&&S.lost.d==td())l=S.lost.n;
  if(c&&M(c))return['amazed',`${c} day streak! Amazing!`];if(l)return l>=7?['sad',`I miss your ${l} day streak...`]:['angry',`You lost your ${l} day streak!`];return['happy',c?'Keep it going!':'Ready to learn?']}
-function addSet(){const ids=A=='h'?H.map((_,i)=>'h:'+i):A=='k'?K.map((_,i)=>'k:'+i):A=='x'?S.ck.map(x=>'x:'+x.id):KJ.filter(k=>k[5]==KL).map(k=>'j:'+k[0]);if(!ids.length)return toast('Add a custom kanji first');let n=0;
+function addSet(){const ids=A=='h'?H.map((_,i)=>'h:'+i):A=='k'?K.map((_,i)=>'k:'+i):A=='x'?S.ck.map(x=>'x:'+x.id):jList().map(k=>'j:'+k[0]);if(!ids.length)return toast(A=='x'?'Add a custom kanji first':'No kanji to add');let n=0;
  ids.forEach(id=>{if(!S.cards[id]){S.cards[id]={b:0,d:td()};n++}});save();markIn();toast(n?n+' cards added to deck':'Already all in your deck')}
 const ORD=['h','k','j','x'],LV=['N5','N4','N3','N2','N1'],AL={h:'Hiragana',k:'Katakana',j:'Kanji',x:'Custom'};
 const segH=(id,L,cur,fn,lbl)=>`<div class=seg id=${id} style="--n:${L.length};--i:${L.indexOf(cur)}"><i class=pill></i>${L.map(k=>`<button class="${k==cur?'on':''}" onclick="${fn}('${k}')">${lbl?lbl[k]:k}</button>`).join('')}</div>`;
@@ -76,13 +76,37 @@ const GROW=[[0,5],[5,10],[10,15],[15,20],[20,25],[25,30],[30,35],[35,38],[38,43]
 const tileH=(id,c,r,n,col)=>`<div class="tile${S.cards[id]?' in':''}${SEL&&SEL.has(id)?' sel':''}${[...c].length>2?' w':''}" data-id="${id}" style="--k:${Math.min(n,24)}${col?`;grid-column:${col}`:''}" onclick="tapT(this,'${id}')"><b>${esc(c)}</b><small>${esc(r)}</small></div>`;
 function gridH(){
  if(A=='x')return `<button class="btn alt" onclick="CKE='';render()">+ New custom kanji</button>`+(S.ck.length?`<div class=grid>${S.ck.map((x,n)=>tileH('x:'+x.id,x.w,x.r,n)).join('')}</div>`:`<p class=cred>Kanji and kanji combinations that aren't in the built-in list live here. Add one, or tap an underlined kanji inside a sentence to give it a reading.</p>`);
- if(A=='j'){const l=jList();return `<div class=grid>${l.slice(0,JN).map(jTile).join('')}</div><div id=jm>${moreH(l.length)}</div>`}
+ if(A=='j'){const l=jList(),q=KQ.trim();return (q?`<div class=dsum><span>${l.length?l.length+' kanji · all levels':'No kanji found for “'+esc(q)+'”'}</span></div>`:'')+(l.length?`<div class=grid>${l.slice(0,JN).map(jTile).join('')}</div><div id=jm>${moreH(l.length)}</div>`:q?`<p class=cred>Try another meaning (like “same”, “agree” or “equal”), a reading in kana, or paste a kanji.</p>`:'')}
  const L=A=='h'?H:K;
  return `<div class=kgrid>${GROW.map(([a,b])=>`${a==46?'<div class=gl>Dakuten ゛</div>':a==66?'<div class=gl>Handakuten ゜</div>':''}<div class=krow>${L.slice(a,b).map((c,j)=>tileH(A+':'+(a+j),c,R[a+j],a+j,b-a==3?[1,3,5][j]:0)).join('')}</div>`).join('')}</div>`}
 let SEL=null,DF='all',DQ='',DL=60;
 // Kanji grid renders in batches so N2/N1 (hundreds of tiles) stay smooth
 const JB=180;let JN=JB;
-const jList=()=>KJ.filter(k=>k[5]==KL),jTile=(k,n)=>tileH('j:'+k[0],k[0],k[1].split(', ')[0],n);
+// Kanji search: every meaning entry and word, the on/kun readings (kana), or the kanji itself, across all levels
+let KQ='',KMATCH={},KI=null;
+const hira=s=>s.replace(/[\u30a1-\u30f6]/g,c=>String.fromCharCode(c.charCodeAt(0)-96));
+const kStem=w=>w.length>4?w.replace(/(ments?|ings?|ed|es|s)$/,''):w;
+function kIdx(){return KI||(KI=KJ.map((k,i)=>{const m=k[1].split(/\s*,\s*/);return{k,i,m,e:m.map(x=>x.toLowerCase().replace(/\s*\([^)]*\)/g,'').trim()),r:hira(k[2]+'・'+k[3]).split('・').flatMap(x=>{x=x.trim();const b=x.replace(/\([^)]*\)/g,''),f=x.replace(/[()]/g,'');return b==f?[b]:[b,f]}).filter(Boolean)}}))}
+function mScore(o,t){let best=9,lab='';o.e.forEach((e,ix)=>{const ws=e.split(/[\s\/-]+/);let s=9;
+ if(e==t)s=0;else if(ws.includes(t))s=1;else if(ws.some(w=>w.startsWith(t)))s=2;else if(t.length>3&&ws.some(w=>kStem(w)==kStem(t)))s=2;
+ if(s<best){best=s;lab=o.m[ix]}});return[best,lab]}
+function kSearch(q){q=q.trim().toLowerCase();KMATCH={};if(!q)return null;
+ const ks=[...q].filter(c=>/[\u4e00-\u9fff]/.test(c));
+ if(ks.length)return ks.map(c=>KM[c]).filter((k,i,x)=>k&&x.indexOf(k)==i).map(k=>(KMATCH[k[0]]=k[1].split(', ')[0],k));
+ const I=kIdx();
+ if(/[\u3040-\u30ff]/.test(q)){const t=hira(q).replace(/\s+/g,''),out=[];
+  I.forEach(o=>{let s=9;o.r.forEach(r=>{if(r==t)s=0;else if(r.startsWith(t)&&s>1)s=1});if(s<9)out.push([s,o])});
+  out.sort((x,y)=>x[0]-y[0]||LV.indexOf(x[1].k[5])-LV.indexOf(y[1].k[5])||x[1].i-y[1].i);
+  return out.map(([,o])=>(KMATCH[o.k[0]]=o.m[0],o.k))}
+ const terms=q.split(/[\s,]+/).filter(Boolean);
+ const run=all=>{const out=[];I.forEach(o=>{let tot=0,lab='',ok=0;terms.forEach(t=>{const[s,l]=mScore(o,t);if(s<9){ok++;tot+=s;if(!lab)lab=l}});if(all?ok==terms.length:ok>0)out.push([tot+(terms.length-ok)*4,o,lab])});return out};
+ let out=run(true);if(!out.length&&terms.length>1)out=run(false);
+ out.sort((x,y)=>x[0]-y[0]||LV.indexOf(x[1].k[5])-LV.indexOf(y[1].k[5])||x[1].i-y[1].i);
+ return out.map(([,o,l])=>(KMATCH[o.k[0]]=l,o.k))}
+const jList=()=>KQ.trim()?kSearch(KQ):KJ.filter(k=>k[5]==KL),jTile=(k,n)=>tileH('j:'+k[0],k[0],KQ.trim()&&KMATCH[k[0]]?KMATCH[k[0]]+' · '+k[5]:k[1].split(', ')[0],n);
+function kSet(v){KQ=v;JN=JB;const g=$('#gw');if(!g)return;g.style.setProperty('--dir',0);g.innerHTML=gridH();selBar()}
+// keep the select bar flush on top of the nav bar whatever its real height is
+const navH=()=>{const n=document.querySelector('nav');if(n&&n.offsetHeight)document.documentElement.style.setProperty('--navh',n.offsetHeight+'px')};addEventListener('resize',navH);
 const moreH=t=>t>JN?`<button class=kmore onclick="moreJ()">Show ${Math.min(JB,t-JN)} more<small>${JN} of ${t} shown</small></button>`:'';
 function moreJ(){const l=jList(),a=JN,g=$('#gw .grid');if(!g)return;JN=Math.min(l.length,JN+JB);$('#gw').style.setProperty('--dir',0);g.insertAdjacentHTML('beforeend',l.slice(a,JN).map((k,n)=>jTile(k,n)).join(''));$('#jm').innerHTML=moreH(l.length)}
 const tids=()=>A=='j'?jList().map(k=>'j:'+k[0]):[...document.querySelectorAll('#gw .tile')].map(t=>t.dataset.id);
@@ -108,7 +132,7 @@ function setA(k){if(k==A)return;SD=ORD.indexOf(k)-ORD.indexOf(A);A=k;swChips()}
 function setKL(l){if(l==KL)return;SD=LV.indexOf(l)-LV.indexOf(KL);KL=l;JN=JB;swChips()}
 const views={
 alpha(){if(KD)return(KD.startsWith('x:')?xdetail(KD.slice(2)):kdetail(KD))+(CKE!==null?ckSheet():'');
- return segH('sg1',ORD,A,'setA',AL)+`<div class="lvw ${A=='j'?'open':''}" id=lvw><div><div style="margin-top:8px">${segH('sg2',LV,KL,'setKL')}</div></div></div>
+ return segH('sg1',ORD,A,'setA',AL)+`<div class="lvw ${A=='j'?'open':''}" id=lvw><div><div style="margin-top:8px">${segH('sg2',LV,KL,'setKL')}</div><input id=kq type=search placeholder="Search kanji by meaning, reading or character" aria-label="Search kanji" autocomplete=off autocapitalize=off enterkeyhint=search value="${esc(KQ)}" oninput="kSet(this.value)"></div></div>
  <div class=row2><button class=btn onclick="addSet()">+ Add all</button><button class="btn alt" id=selbtn onclick="toggleSel()">${SEL?'Cancel':'Select'}</button></div><div id=gw>${gridH()}</div><div id=selbar></div>${CKE!==null?ckSheet():''}`},
 cards(){if(RV)return review();const due=dueIds(),i=Math.floor(Date.now()/864e5)%WORDS.length,dw={w:WORDS[i][0],r:WORDS[i][1],m:WORDS[i][2]},inD=S.custom.some(x=>x.t==dw.w);
  return `${S.name?`<h2 class=hi>Hello, ${esc(S.name)}!</h2>`:''}${lvl()}<div class=hero>${due.length}<small> to study</small><div style="font-size:14px;color:var(--s)">${due.filter(k=>!S.cards[k].r).length} new · ${due.filter(k=>S.cards[k].r).length} review</div><div class=row2><button class=btn onclick="startRev()" ${due.length?'':'disabled'}>Start review</button><button class="btn alt" onclick="startBuild()">Build sentences</button></div></div>
@@ -133,6 +157,7 @@ set(){const on=k=>k=='sfx'?S.sfx!==false:!!S.tts,TH=['auto','light','dark'],
  <h3 class=sh>Appearance</h3>${segH('thm',TH,S.theme,'setTheme',{auto:'Auto',light:'Light',dark:'Dark'})}
  <h3 class=sh>Backup</h3><div class=row2><button class="btn alt" onclick="exp()">Export backup</button><button class="btn alt" onclick="$('#im').click()">Import backup</button></div><input id=im type=file accept=.json hidden onchange="imp(this.files[0])">
  <button class="btn dng" onclick="wipe()">Delete all data</button>
+ <h3 class=sh>Disclaimer</h3><p class=cred style="font-size:13px;line-height:1.5">MemoJap is a supplemental tool for learning the Japanese language. It does not guarantee that you will become fluent or earn a JLPT N-level certification. For the best results, use MemoJap alongside other learning resources and expose yourself to Japanese media and literature.</p>
  <p class=cred>Stroke data: KanjiVG (CC BY-SA 3.0). Kanji: KANJIDIC (EDRDG, CC BY-SA 4.0). Word lists: JLPT lists by Jonathan Waller, via JMdict data.</p>`},
 test(){if(AS.i>=QC.length){const l=estLv();
  return `<div class=hero>${l}<small> estimated</small></div><p>${['N5','N4','N3','N2','N1'].map(x=>`${x} ${AS.sc[x]}/5`).join(' · ')}</p><p>This is a rough estimate from a short quiz. It does not test listening or speaking.</p><p>Your level is now set to <b>${l}</b>. You can override it any time in Profile.</p><button class=btn onclick="go('cards')">Done</button><button class="btn alt" onclick="go('prof')">Change my level</button><button class="btn alt" onclick="startTest()">Retake the check</button>`}
@@ -326,9 +351,9 @@ const FT=[
 const testSheet=()=>`<div class=sheet onclick="TS=0;render()"><div onclick="event.stopPropagation()"><div class=rh style="justify-content:space-between"><h3 style="margin:0">Free N5–N1 tests</h3><button class=ib onclick="TS=0;render()" aria-label="Close">${SYS.dismiss}</button></div>
  <div class=cred>Free practice and level checks. They are only estimates, not official certification. Links open in your browser.</div>${FT.map(f=>`<div class=card2><b>${esc(f.n)}</b><div class=cred style="margin:4px 0 10px">${esc(f.d)}</div><div class=tls>${f.l.map(([t,u])=>`<a href="${esc(u)}" target=_blank rel=noopener>${esc(t)}</a>`).join('')}</div></div>`).join('')}</div></div>`;
 async function wipe(){if(!confirm('Delete ALL your data? Cards, progress, XP and settings will be erased. This cannot be undone.'))return;const d=await idb,tx=d.transaction('s','readwrite');tx.objectStore('s').clear();tx.oncomplete=()=>location.reload()}
-function go(t){LVA=1;vt(()=>{T=t;SH=0;TS=0;KD=null;RV=0;ALL=0;SQ='';AD=0;CKE=null;SEL=null;DQ='';DL=60;document.body.classList.remove('sm');if(t!='build')SB=null;render()})}
+function go(t){LVA=1;vt(()=>{T=t;SH=0;TS=0;KD=null;RV=0;ALL=0;SQ='';AD=0;CKE=null;SEL=null;DQ='';DL=60;KQ='';document.body.classList.remove('sm');if(t!='build')SB=null;render()})}
 function render(){document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t==({test:'cards',build:'cards',deck:'cards'}[T]||T)));
- hud();M.innerHTML=views[T]();if(T=='alpha'&&!KD)selBar();$('#ty')?.focus();if(AD)$('#tx')?.focus();if(CKE!==null)$('#cw')?.focus();if(KD){initCv();setTimeout(play,250)}else if(RV&&EM=='write'){initCv();wRestore()}scrollTo(0,0)}
+ hud();M.innerHTML=views[T]();navH();if(T=='alpha'&&!KD)selBar();$('#ty')?.focus();if(AD)$('#tx')?.focus();if(CKE!==null)$('#cw')?.focus();if(KD){initCv();setTimeout(play,250)}else if(RV&&EM=='write'){initCv();wRestore()}scrollTo(0,0)}
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>go(b.dataset.t));
 load().then(d=>{if(d)S=Object.assign(S,d);S.words.forEach(fixW);const h=new Set(S.words.map(x=>x.w+x.r));SEED.forEach(x=>h.has(x.w+x.r)||S.words.push(x));FI=null;mig();migCk();theme();render()});
 navigator.storage?.persist?.();

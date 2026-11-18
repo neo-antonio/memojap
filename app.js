@@ -113,7 +113,7 @@ const tids=()=>A=='j'?jList().map(k=>'j:'+k[0]):[...document.querySelectorAll('#
 function markIn(){document.querySelectorAll('#gw .tile').forEach((t,i)=>{const was=t.classList.contains('in'),now=!!S.cards[t.dataset.id];t.classList.toggle('in',now);t.classList.toggle('sel',!!(SEL&&SEL.has(t.dataset.id)));if(now&&!was){pop(t);t.style.animationDelay=Math.min(i,40)*12+'ms'}})}
 // Select mode works on everything: tap any tiles, then add the ones that are new or remove the ones already in the deck
 function tapT(el,id){if(SEL){SEL.has(id)?SEL.delete(id):SEL.add(id);el.classList.toggle('sel',SEL.has(id));return selBar()}
- pop(el);if(A=='h'||A=='k')return say(card(id).say);KD=A=='j'?id.slice(2):id;render()}
+ pop(el);if(A=='h'||A=='k')say(card(id).say);KD=A=='j'?id.slice(2):id;render()}
 const allSel=()=>{const t=tids();return t.length>0&&t.every(id=>SEL.has(id))};
 function selBar(){const e=$('#selbar');if(!e)return;document.body.classList.toggle('sm',!!SEL);const sb=$('#selbtn');if(sb)sb.textContent=SEL?'Cancel':'Select';
  if(!SEL){e.innerHTML='';return}
@@ -131,7 +131,7 @@ function swChips(){const g=$('#gw');if(!g)return;
 function setA(k){if(k==A)return;SD=ORD.indexOf(k)-ORD.indexOf(A);A=k;swChips()}
 function setKL(l){if(l==KL)return;SD=LV.indexOf(l)-LV.indexOf(KL);KL=l;JN=JB;swChips()}
 const views={
-alpha(){if(KD)return(KD.startsWith('x:')?xdetail(KD.slice(2)):kdetail(KD))+(CKE!==null?ckSheet():'');
+alpha(){if(KD)return(KD.startsWith('x:')?xdetail(KD.slice(2)):/^[hk]:/.test(KD)?kanaDetail(KD):kdetail(KD))+(CKE!==null?ckSheet():'');
  return segH('sg1',ORD,A,'setA',AL)+`<div class="lvw ${A=='j'?'open':''}" id=lvw><div><div style="margin-top:8px">${segH('sg2',LV,KL,'setKL')}</div><input id=kq type=search placeholder="Search kanji by meaning, reading or character" aria-label="Search kanji" autocomplete=off autocapitalize=off enterkeyhint=search value="${esc(KQ)}" oninput="kSet(this.value)"></div></div>
  <div class=row2><button class=btn onclick="addSet()">+ Add all</button><button class="btn alt" id=selbtn onclick="toggleSel()">${SEL?'Cancel':'Select'}</button></div><div id=gw>${gridH()}</div><div id=selbar></div>${CKE!==null?ckSheet():''}`},
 cards(){if(RV)return review();const due=dueIds(),i=Math.floor(Date.now()/864e5)%WORDS.length,dw={w:WORDS[i][0],r:WORDS[i][1],m:WORDS[i][2]},inD=S.custom.some(x=>x.t==dw.w);
@@ -185,6 +185,12 @@ function xdetail(id){const x=CKM(id);if(!x){KD=null;return views.alpha()}
  ${sp?`<h3>Stroke order</h3><svg id=sv class=sv viewBox="0 0 109 109" onclick="play()">${sp}</svg><button class="btn alt" onclick="play()">${SYS.play} Play again</button><h3>Trace it</h3><div class=pad><svg class=guide viewBox="0 0 109 109">${sp}</svg><canvas id=cv width=300 height=300></canvas></div><button class="btn alt" onclick="clr()">Clear</button>`:''}`}
 function migCk(){if(S.ckm)return;S.ckm=1;const sk=new Set([...SEED,...CUR].map(x=>x.w+x.r)),seen=new Set(S.ck.map(x=>x.w));
  S.words.forEach((x,i)=>{if(x.ck||sk.has(x.w+x.r)||seen.has(x.w)||!/[\u3400-\u4dbf\u4e00-\u9fff]/.test(x.w)||([...x.w].length==1&&KM[x.w]))return;seen.add(x.w);const id=String(Date.now()+i);x.ck=id;S.ck.push({id,w:x.w,r:x.r,m:x.m||'',n:x.n||''})});if(S.ck.length)save()}
+// Hiragana / katakana page: sound, stroke order animation and a tracing pad (stroke data in kana.js)
+function addKana(id,b){if(S.cards[id]){delete S.cards[id];b.textContent='+ Add to deck';b.className='btn alt';toast('Removed from deck')}else{S.cards[id]={b:0,d:td()};b.textContent='Remove from deck';b.className='btn no';toast('Added to deck')}save()}
+function kanaDetail(id){const c=card(id),st=STK[c.f]||[],sp=st.map(d=>`<path d="${d}"/>`).join(''),inD=!!S.cards[id];
+ return `<button class=link onclick="KD=null;render()">${SYS.back} Back</button><div class=kd><div class=big>${c.f}</div><h2>${c.b}</h2><p><small>${id[0]=='h'?'Hiragana':'Katakana'}${st.length?' · '+st.length+' stroke'+(st.length==1?'':'s'):''}</small></p></div><div style="text-align:center;margin:8px 0">${vb(c.say,'lg')}</div><button class="btn ${inD?'no':'alt'}" onclick="addKana('${id}',this)">${inD?'Remove from deck':'+ Add to deck'}</button>
+ ${sp?`<h3>Stroke order</h3><svg id=sv class=sv viewBox="0 0 109 109" onclick="play()">${sp}</svg><button class="btn alt" onclick="play()">${SYS.play} Play again</button>
+ <h3>Trace it</h3><div class=pad><svg class=guide viewBox="0 0 109 109">${sp}</svg><canvas id=cv width=300 height=300></canvas></div><button class="btn alt" onclick="clr()">Clear</button>`:''}`}
 function kdetail(c){const k=KM[c],ws=S.words.map((w,i)=>[w,i]).filter(([w])=>w.w.length>1&&w.w.includes(c)).slice(0,40),sp=(STK[c]||[]).map(d=>`<path d="${d}"/>`).join('');
  return `<button class=link onclick="KD=null;render()">${SYS.back} Back</button><div class=kd><div class=big>${c}</div><h2>${k[1]}</h2><p>音 ${k[2]}<br>訓 ${k[3]}<br><small>${k[4]} strokes · ${k[5]}</small></p></div><div style="text-align:center;margin:8px 0">${vb(c,'lg')}</div><button class="btn ${S.cards['j:'+c]?'no':'alt'}" onclick="addJ('${c}',this)">${S.cards['j:'+c]?'Remove from deck':'+ Add kanji to deck'}</button>
  <h3>Stroke order</h3><svg id=sv class=sv viewBox="0 0 109 109" onclick="play()">${sp}</svg><button class="btn alt" onclick="play()">${SYS.play} Play again</button>

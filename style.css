@@ -157,3 +157,6 @@ nav i{transition:transform .45s cubic-bezier(.25,.8,.35,1)}nav button.on i{trans
 
 /* select bar sits flush on the nav bar (the nav is 70px, not the 72px --nh) */
 #selbar{bottom:var(--navh,calc(70px + env(safe-area-inset-bottom)))}
+
+/* select mode: no check mark on selected tiles (the blue outline is enough) */
+.tile.sel::after{content:none}
